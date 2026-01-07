@@ -14,8 +14,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Create Legal App",
-  description: "The foundation is set. Now connect the dots.",
+  title: "Contract Clause Comparator",
+  description: "Compare contract versions instantly. Identify changes, assess risk, and make informed decisions with AI-powered analysis.",
 };
 
 export default function RootLayout({
