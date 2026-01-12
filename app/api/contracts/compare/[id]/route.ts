@@ -2,19 +2,14 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
 import { comparisonStatus } from '../route';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // Get session
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  // Client-side auth - no server session validation
+  // In production with server auth, validate session here
 
   const { id } = await params;
 
@@ -31,6 +26,9 @@ export async function GET(
       id,
       status: status.status,
       comparison: status.result,
+      clauseMatches: status.clauseMatches || [],
+      sourceContract: status.sourceContract,
+      targetContract: status.targetContract,
     });
   }
 

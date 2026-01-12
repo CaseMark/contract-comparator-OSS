@@ -2,13 +2,19 @@
  * Next.js Middleware for Route Protection
  *
  * Protects routes by checking for authentication before allowing access.
- * Uncomment and configure as needed for your application.
+ * Supports both Better Auth (cookie-based) and local IndexedDB auth.
  *
  * @see skills/auth/SKILL.md for detailed documentation
  */
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+
+/**
+ * Cookie name used by local IndexedDB auth to signal active session
+ * This is set client-side when a user logs in/out with local auth
+ */
+const LOCAL_AUTH_COOKIE = "ccc:local-session";
 
 /**
  * Routes that don't require authentication
@@ -40,9 +46,11 @@ export function middleware(request: NextRequest) {
 
   // Check for session cookie
   // Better Auth uses "better-auth.session_token" by default
-  const sessionCookie = request.cookies.get("better-auth.session_token");
+  // Local auth uses "ccc:local-session" cookie
+  const betterAuthSession = request.cookies.get("better-auth.session_token");
+  const localAuthSession = request.cookies.get(LOCAL_AUTH_COOKIE);
 
-  if (!sessionCookie) {
+  if (!betterAuthSession && !localAuthSession) {
     // Redirect to login with callback URL
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("callbackUrl", pathname);

@@ -4,4 +4,5 @@ export { ClauseList } from './clause-list';
 export { ComparisonList } from './comparison-list';
 export { ExecutiveSummary } from './executive-summary';
 export { MatchBadge } from './match-badge';
+export { RedlineView } from './redline-view';
 export { RiskBadge, OverallRiskScore } from './risk-badge';

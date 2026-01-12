@@ -10,16 +10,25 @@ import {
   ListBullets,
   Article,
   Warning,
+  Files,
 } from '@phosphor-icons/react';
 import { useComparison } from '@/lib/contexts/comparison-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ClauseList, ExecutiveSummary, OverallRiskScore } from '@/components/comparison';
+import { ClauseList, ExecutiveSummary, OverallRiskScore, RedlineView } from '@/components/comparison';
 import { formatDateTime } from '@/lib/contracts/utils';
-import { saveComparison, getComparison as getComparisonFromDB } from '@/lib/storage';
+import {
+  saveComparison,
+  getComparison as getComparisonFromDB,
+  saveClauseMatches,
+  getClauseMatchesByComparison,
+  getContract,
+  saveContract,
+} from '@/lib/storage';
 import type { Comparison, ClauseMatch } from '@/types/comparison';
+import type { Contract } from '@/types/contract';
 
-type TabType = 'summary' | 'clauses';
+type TabType = 'summary' | 'clauses' | 'redline';
 
 export default function ComparisonResultPage({
   params,
@@ -32,6 +41,8 @@ export default function ComparisonResultPage({
 
   const [comparison, setComparison] = useState<Comparison | null>(null);
   const [clauseMatches, setClauseMatches] = useState<ClauseMatch[]>([]);
+  const [sourceContract, setSourceContract] = useState<Contract | null>(null);
+  const [targetContract, setTargetContract] = useState<Contract | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('summary');
@@ -45,9 +56,24 @@ export default function ComparisonResultPage({
       try {
         const stored = await getComparisonFromDB(id);
         if (stored && stored.status === 'completed') {
+          // Also load clause matches and contracts
+          const [storedMatches, source, target] = await Promise.all([
+            getClauseMatchesByComparison(id),
+            getContract(stored.sourceContractId),
+            getContract(stored.targetContractId),
+          ]);
+
           if (isMounted) {
             setComparison(stored);
+            setClauseMatches(storedMatches);
+            setSourceContract(source || null);
+            setTargetContract(target || null);
             setIsLoading(false);
+
+            // Clear active comparison if this one is complete
+            if (activeComparison?.id === id) {
+              clearActiveComparison();
+            }
           }
           return true;
         }
@@ -67,14 +93,35 @@ export default function ComparisonResultPage({
         const data = await response.json();
 
         if (data.status === 'completed' && data.comparison) {
-          // Save to IndexedDB for persistence
+          // Save comparison to IndexedDB for persistence
           const saved = await saveComparison(data.comparison);
           if (saved) {
             console.log('[Comparison] Saved to IndexedDB:', id);
           }
 
+          // Save clause matches to IndexedDB
+          if (data.clauseMatches && data.clauseMatches.length > 0) {
+            const matchesSaved = await saveClauseMatches(data.clauseMatches);
+            if (matchesSaved) {
+              console.log('[Comparison] Saved clause matches to IndexedDB:', data.clauseMatches.length);
+            }
+          }
+
+          // Save contracts to IndexedDB for redline view
+          if (data.sourceContract) {
+            await saveContract(data.sourceContract);
+            console.log('[Comparison] Saved source contract to IndexedDB');
+          }
+          if (data.targetContract) {
+            await saveContract(data.targetContract);
+            console.log('[Comparison] Saved target contract to IndexedDB');
+          }
+
           if (isMounted) {
             setComparison(data.comparison);
+            setClauseMatches(data.clauseMatches || []);
+            setSourceContract(data.sourceContract || null);
+            setTargetContract(data.targetContract || null);
             setIsLoading(false);
 
             // Clear active comparison since it's done
@@ -236,20 +283,34 @@ export default function ComparisonResultPage({
           <ListBullets size={16} data-icon="inline-start" />
           Clauses
         </Button>
+        <Button
+          variant={activeTab === 'redline' ? 'secondary' : 'ghost'}
+          size="sm"
+          onClick={() => setActiveTab('redline')}
+        >
+          <Files size={16} data-icon="inline-start" />
+          Redline
+        </Button>
       </div>
 
       {/* Tab content */}
       {activeTab === 'summary' && comparison.summary ? (
         <ExecutiveSummary summary={comparison.summary} />
-      ) : activeTab === 'clauses' ? (
-        <ClauseList clauseMatches={clauseMatches} />
-      ) : (
+      ) : activeTab === 'summary' && !comparison.summary ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
             No summary available for this comparison.
           </CardContent>
         </Card>
-      )}
+      ) : activeTab === 'clauses' ? (
+        <ClauseList clauseMatches={clauseMatches} />
+      ) : activeTab === 'redline' ? (
+        <RedlineView
+          sourceContract={sourceContract}
+          targetContract={targetContract}
+          clauseMatches={clauseMatches}
+        />
+      ) : null}
     </div>
   );
 }

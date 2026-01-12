@@ -3,8 +3,6 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
 import {
   createComparisonWithTextSchema,
   validateBody,
@@ -26,17 +24,21 @@ const comparisonStatus = new Map<string, {
   status: 'pending' | 'processing' | 'completed' | 'failed';
   error?: string;
   result?: Comparison;
+  clauseMatches?: ClauseMatch[];
+  sourceContract?: Contract;
+  targetContract?: Contract;
 }>();
 
 export async function POST(request: NextRequest) {
-  // Get session
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  // Parse and validate body
+  // Parse body
   const body = await request.json();
+
+  // For client-side auth, userId comes from the request
+  // In production with server-side auth, this would come from session
+  const userId = body.userId || 'anonymous';
+  const organizationId = body.organizationId;
+
+  // Validate required fields
   const validation = validateBody(createComparisonWithTextSchema, body);
 
   if (!validation.success) {
@@ -59,8 +61,8 @@ export async function POST(request: NextRequest) {
     fileSize: new Blob([sourceText]).size,
     content: sourceText,
     uploadedAt: new Date().toISOString(),
-    uploadedBy: session.user.id,
-    organizationId: session.session.activeOrganizationId || undefined,
+    uploadedBy: userId,
+    organizationId: organizationId || undefined,
     status: 'completed',
   };
 
@@ -72,8 +74,8 @@ export async function POST(request: NextRequest) {
     fileSize: new Blob([targetText]).size,
     content: targetText,
     uploadedAt: new Date().toISOString(),
-    uploadedBy: session.user.id,
-    organizationId: session.session.activeOrganizationId || undefined,
+    uploadedBy: userId,
+    organizationId: organizationId || undefined,
     status: 'completed',
   };
 
@@ -84,8 +86,8 @@ export async function POST(request: NextRequest) {
     sourceContractId,
     targetContractId,
     createdAt: new Date().toISOString(),
-    createdBy: session.user.id,
-    organizationId: session.session.activeOrganizationId || undefined,
+    createdBy: userId,
+    organizationId: organizationId || undefined,
     status: 'pending',
     overallRiskScore: 0,
   };
@@ -334,10 +336,13 @@ async function processComparisonInBackground(
       },
     };
 
-    // Store completed result
+    // Store completed result with clause matches and contracts
     comparisonStatus.set(comparisonId, {
       status: 'completed',
       result: finalComparison,
+      clauseMatches: clauseMatches,
+      sourceContract,
+      targetContract,
     });
   } catch (error) {
     console.error('Comparison processing error:', error);

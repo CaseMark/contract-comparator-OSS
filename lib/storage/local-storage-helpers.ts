@@ -1,5 +1,8 @@
+'use client';
+
 // localStorage helper utilities
 // Provides robust serialization, error handling, and debugging for localStorage operations
+// Must be 'use client' because it uses browser localStorage
 
 const DEBUG = process.env.NODE_ENV === 'development';
 

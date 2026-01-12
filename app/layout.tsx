@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { CaseDevFooter } from "@/components/case-dev-footer";
+import { Providers } from "@/components/providers";
 import "./globals.css";
 
 const inter = Inter({ 
@@ -34,8 +35,10 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased min-h-screen flex flex-col bg-white dark:bg-neutral-950">
-        <main className="flex-1 flex flex-col">{children}</main>
-        <CaseDevFooter />
+        <Providers>
+          <main className="flex-1 flex flex-col">{children}</main>
+          <CaseDevFooter />
+        </Providers>
       </body>
     </html>
   );

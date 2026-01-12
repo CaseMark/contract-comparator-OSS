@@ -8,7 +8,7 @@ import type { MatchType } from '@/types/comparison';
 
 interface MatchBadgeProps {
   matchType: MatchType;
-  size?: 'sm' | 'default';
+  size?: 'xs' | 'sm' | 'default';
 }
 
 const matchConfig: Record<
@@ -45,15 +45,27 @@ export function MatchBadge({ matchType, size = 'default' }: MatchBadgeProps) {
   const config = matchConfig[matchType];
   const Icon = config.icon;
 
+  const sizeClasses = {
+    xs: 'px-1.5 py-0.5 text-[10px]',
+    sm: 'px-2 py-0.5 text-xs',
+    default: 'px-2.5 py-1 text-sm',
+  };
+
+  const iconSize = {
+    xs: 10,
+    sm: 12,
+    default: 14,
+  };
+
   return (
     <span
       className={cn(
         'inline-flex items-center gap-1 rounded-full font-medium',
         config.color,
-        size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-sm'
+        sizeClasses[size]
       )}
     >
-      <Icon size={size === 'sm' ? 12 : 14} weight="bold" />
+      <Icon size={iconSize[size]} weight="bold" />
       {config.label}
     </span>
   );

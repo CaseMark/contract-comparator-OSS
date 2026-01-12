@@ -1,5 +1,8 @@
+'use client';
+
 // Storage operations for contracts, clauses, and comparisons
 // Combines IndexedDB (Dexie) for large data with localStorage for small state
+// Must be 'use client' because it uses IndexedDB and localStorage
 
 import { getDatabase, isBrowser } from './db';
 import {

@@ -2,7 +2,7 @@
 
 // New comparison page - upload and compare contracts
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, Spinner, FileText, TextAa } from '@phosphor-icons/react';
 import { useSession } from '@/lib/auth/client';
@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { DualUploadZone } from '@/components/contracts';
+import { listComparisons } from '@/lib/storage';
 import { cn } from '@/lib/utils';
 
 type InputMode = 'file' | 'text';
@@ -21,14 +22,37 @@ export default function ComparePage() {
   const router = useRouter();
   const { setActiveComparison, isComparisonInProgress } = useComparison();
 
-  const [mode, setMode] = useState<InputMode>('text');
+  const [mode, setMode] = useState<InputMode>('file');
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [targetFile, setTargetFile] = useState<File | null>(null);
   const [sourceText, setSourceText] = useState('');
   const [targetText, setTargetText] = useState('');
   const [comparisonName, setComparisonName] = useState('');
+  const [nextComparisonNumber, setNextComparisonNumber] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Load comparison count to generate default name
+  // Re-run when isComparisonInProgress changes to account for processing comparisons
+  useEffect(() => {
+    async function loadComparisonCount() {
+      const userId = session?.user?.id;
+      if (!userId) return;
+
+      const comparisons = await listComparisons(userId);
+      // Add 1 for the next comparison, plus 1 more if one is currently processing
+      const baseCount = comparisons.length + 1;
+      const adjustedCount = isComparisonInProgress ? baseCount + 1 : baseCount;
+      setNextComparisonNumber(adjustedCount);
+    }
+    loadComparisonCount();
+  }, [session?.user?.id, isComparisonInProgress]);
+
+  // Generate default name if none provided
+  const getComparisonName = () => {
+    if (comparisonName.trim()) return comparisonName.trim();
+    return `Comparison ${String(nextComparisonNumber).padStart(2, '0')}`;
+  };
 
   const canSubmit =
     !isSubmitting &&
@@ -45,6 +69,12 @@ export default function ComparePage() {
     try {
       let requestBody: Record<string, string>;
 
+      // Include user info for client-side auth
+      const userId = session?.user?.id || 'anonymous';
+      const organizationId = session?.session?.activeOrganizationId;
+
+      const name = getComparisonName();
+
       if (mode === 'file' && sourceFile && targetFile) {
         // Read file contents
         const sourceContent = await readFileAsText(sourceFile);
@@ -55,7 +85,9 @@ export default function ComparePage() {
           targetText: targetContent,
           sourceFileName: sourceFile.name,
           targetFileName: targetFile.name,
-          name: comparisonName || undefined,
+          name,
+          userId,
+          organizationId,
         } as Record<string, string>;
       } else {
         requestBody = {
@@ -63,7 +95,9 @@ export default function ComparePage() {
           targetText: targetText.trim(),
           sourceFileName: 'Original Contract',
           targetFileName: 'Modified Contract',
-          name: comparisonName || undefined,
+          name,
+          userId,
+          organizationId,
         } as Record<string, string>;
       }
 
@@ -110,20 +144,20 @@ export default function ComparePage() {
       {/* Input mode toggle */}
       <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/50 w-fit">
         <Button
-          variant={mode === 'text' ? 'secondary' : 'ghost'}
-          size="sm"
-          onClick={() => setMode('text')}
-        >
-          <TextAa size={16} data-icon="inline-start" />
-          Paste Text
-        </Button>
-        <Button
           variant={mode === 'file' ? 'secondary' : 'ghost'}
           size="sm"
           onClick={() => setMode('file')}
         >
           <FileText size={16} data-icon="inline-start" />
           Upload Files
+        </Button>
+        <Button
+          variant={mode === 'text' ? 'secondary' : 'ghost'}
+          size="sm"
+          onClick={() => setMode('text')}
+        >
+          <TextAa size={16} data-icon="inline-start" />
+          Paste Text
         </Button>
       </div>
 
@@ -134,10 +168,21 @@ export default function ComparePage() {
           <CardDescription>
             {mode === 'file'
               ? 'Upload the original and modified versions of your contract'
-              : 'Paste the contract text for both versions'}
+              : 'Paste the text for both contract versions'}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Comparison name field - moved above upload */}
+          <Field>
+            <FieldLabel>Comparison Name</FieldLabel>
+            <Input
+              placeholder={`Comparison ${String(nextComparisonNumber).padStart(2, '0')}`}
+              value={comparisonName}
+              onChange={(e) => setComparisonName(e.target.value)}
+              disabled={isSubmitting}
+            />
+          </Field>
+
           <DualUploadZone
             sourceFile={sourceFile}
             targetFile={targetFile}
@@ -158,17 +203,6 @@ export default function ComparePage() {
             isProcessing={isSubmitting}
             mode={mode}
           />
-
-          {/* Optional name field */}
-          <Field>
-            <FieldLabel>Comparison Name (optional)</FieldLabel>
-            <Input
-              placeholder="e.g., Acme Corp NDA - Q1 2024 Review"
-              value={comparisonName}
-              onChange={(e) => setComparisonName(e.target.value)}
-              disabled={isSubmitting}
-            />
-          </Field>
 
           {/* Error message */}
           {error && (

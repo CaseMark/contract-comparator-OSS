@@ -1311,6 +1311,173 @@ bun drizzle-kit push --verbose
 
 ---
 
+## Part 7: Local IndexedDB Authentication (Development Mode)
+
+For demos and local development, this project includes a client-side authentication system that stores data in IndexedDB. This mirrors the Better Auth API surface but runs entirely in the browser.
+
+### How It Works
+
+1. **User data**: Stored in IndexedDB (`ContractComparator` database)
+2. **Session tracking**: localStorage (`ccc:session`) + cookie (`ccc:local-session`)
+3. **Middleware compatibility**: A cookie is set to signal auth state to the server
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         Browser                                  │
+├─────────────────────────────────────────────────────────────────┤
+│  IndexedDB (ContractComparator)                                 │
+│  ├── users        (id, email, passwordHash, name, ...)          │
+│  ├── sessions     (id, userId, token, expiresAt)                │
+│  ├── organizations (id, name, slug)                             │
+│  └── members      (id, userId, organizationId, role)            │
+├─────────────────────────────────────────────────────────────────┤
+│  localStorage                                                    │
+│  └── ccc:session  (sessionId, token, activeOrganizationId)      │
+├─────────────────────────────────────────────────────────────────┤
+│  Cookies                                                         │
+│  └── ccc:local-session=1  (signals auth to middleware)          │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                         Server (Middleware)                      │
+│  Checks for: better-auth.session_token OR ccc:local-session     │
+│  If neither exists → redirect to /login                          │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Common Issues & Solutions
+
+#### Login Appears to "Hang" or Redirects Infinitely
+
+**Cause**: Cookie not set, so middleware keeps redirecting to login.
+
+**Solution**: The cookie is now automatically set when logging in. If you have old sessions:
+
+```typescript
+// In browser console
+import { clearAllSessions } from '@/lib/auth/client';
+await clearAllSessions();
+// Then log in again
+```
+
+#### Email Already Registered
+
+**Cause**: User exists in IndexedDB from a previous session.
+
+**Solution**: Either log in with that email, or delete the user:
+
+```typescript
+import { deleteUserByEmail } from '@/lib/auth/client';
+await deleteUserByEmail('user@example.com');
+```
+
+### Dev Tools API
+
+Import from `@/lib/auth/client`:
+
+```typescript
+import {
+  listAllUsers,
+  getUserByEmail,
+  deleteUserByEmail,
+  clearAllSessions,
+  clearAllAuthData,
+  validateSessionSync,
+} from '@/lib/auth/client';
+```
+
+#### `listAllUsers(): Promise<StoredUserInfo[]>`
+
+List all users stored in IndexedDB:
+
+```typescript
+const users = await listAllUsers();
+console.table(users);
+// → [{ id, email, name, createdAt, hasActiveSession }]
+```
+
+#### `getUserByEmail(email: string): Promise<User | null>`
+
+Get a specific user:
+
+```typescript
+const user = await getUserByEmail('test@example.com');
+```
+
+#### `deleteUserByEmail(email: string): Promise<{ success: boolean; error?: string }>`
+
+Delete a user and their sessions:
+
+```typescript
+const result = await deleteUserByEmail('test@example.com');
+if (result.success) console.log('User deleted');
+```
+
+#### `clearAllSessions(): Promise<void>`
+
+Log out all users (keeps accounts):
+
+```typescript
+await clearAllSessions();
+```
+
+#### `clearAllAuthData(): Promise<void>`
+
+Nuclear option - delete everything:
+
+```typescript
+await clearAllAuthData();
+// ⚠️ Removes all users, sessions, organizations, memberships
+```
+
+#### `validateSessionSync(): Promise<SessionSyncStatus>`
+
+Debug session state:
+
+```typescript
+const status = await validateSessionSync();
+console.log(status);
+// {
+//   hasLocalStorageSession: true,
+//   hasCookie: true,
+//   hasIndexedDBSession: true,
+//   isValid: true,
+//   details: 'Session is valid and synced'
+// }
+```
+
+### Quick Debug Workflow
+
+Open browser DevTools console:
+
+```javascript
+// 1. Check current session state
+const { validateSessionSync } = await import('@/lib/auth/client');
+console.log(await validateSessionSync());
+
+// 2. See all stored users
+const { listAllUsers } = await import('@/lib/auth/client');
+console.table(await listAllUsers());
+
+// 3. If stuck, clear sessions and try again
+const { clearAllSessions } = await import('@/lib/auth/client');
+await clearAllSessions();
+location.reload();
+```
+
+### Migrating to Production (Better Auth)
+
+When ready for production:
+
+1. Set up a real database (Neon, Supabase, etc.)
+2. Configure Better Auth with database adapter (see Part 4)
+3. Remove `ccc:local-session` cookie check from middleware
+4. The API surface is the same, so components work without changes
+
+---
+
 ## Resources
 
 - [Better Auth Documentation](https://better-auth.com/docs)

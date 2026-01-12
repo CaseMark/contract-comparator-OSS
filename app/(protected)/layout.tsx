@@ -3,6 +3,7 @@
 // Protected layout for authenticated pages
 // Includes comparison provider and navigation
 
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSession, signOut } from '@/lib/auth/client';
@@ -26,14 +27,15 @@ export default function ProtectedLayout({
   const { data: session, isPending } = useSession();
   const router = useRouter();
 
-  // Redirect to login if not authenticated
-  if (!isPending && !session) {
-    router.push('/login');
-    return null;
-  }
+  // Redirect to login if not authenticated (must be in useEffect to avoid render-time navigation)
+  useEffect(() => {
+    if (!isPending && !session) {
+      router.push('/login');
+    }
+  }, [isPending, session, router]);
 
-  // Show loading state
-  if (isPending) {
+  // Show loading state while checking auth or redirecting
+  if (isPending || !session) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Spinner size={32} className="animate-spin text-primary" />
