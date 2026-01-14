@@ -8,6 +8,8 @@
 
 Compare contracts side-by-side with AI-powered clause extraction, semantic matching, and risk analysis. Built on the [Case.dev](https://case.dev) legal AI platform.
 
+**No sign-up required** — start comparing contracts immediately.
+
 ## What It Does
 
 Contract Comparator analyzes two contracts and provides:
@@ -46,32 +48,26 @@ A typical contract comparison uses approximately $0.10-0.30 in API credits depen
 
 ---
 
-## Data Storage
+## Browser Isolation
 
-This demo uses **browser-based storage** — no server database required.
+All data is stored locally in your browser using localStorage and IndexedDB. Documents and comparisons are isolated per browser — data from one browser or device is not accessible from another.
 
 ### localStorage
 
-Used for lightweight, synchronous data:
-
 | Key | Purpose |
 |-----|---------|
-| `ccc:session` | Local authentication session |
-| `ccc:user` | User profile data |
 | `ccc:demoUsage` | API usage tracking (tokens, cost, session start) |
 | `ccc:activeComparison` | Currently processing comparison ID |
 
 ### IndexedDB
 
-Used for larger, structured data via the `contract-comparator` database:
+The `contract-comparator` database stores:
 
 | Store | Purpose |
 |-------|---------|
 | `comparisons` | Completed comparison results with summaries |
 | `clauseMatches` | Individual clause match details and risk scores |
 | `contracts` | Uploaded contract metadata and extracted text |
-
-All data remains in your browser.
 
 ---
 
@@ -136,8 +132,7 @@ Pricing starts at $0.01 per credit with volume discounts available.
 - **Language**: TypeScript
 - **Styling**: [Tailwind CSS 4](https://tailwindcss.com) + [Base UI](https://base-ui.com)
 - **AI Platform**: [Case.dev](https://case.dev)
-- **Storage**: localStorage + IndexedDB (browser-only)
-- **Authentication**: Local auth (demo) or Better Auth (production)
+- **Storage**: localStorage + IndexedDB (browser-only, no server database)
 
 ---
 
@@ -145,13 +140,11 @@ Pricing starts at $0.01 per credit with volume discounts available.
 
 ```
 ├── app/
-│   ├── (protected)/      # Authenticated routes
+│   ├── (protected)/      # App routes (dashboard, compare)
 │   │   ├── dashboard/    # Comparison history
 │   │   └── compare/      # New comparison & results
-│   ├── api/
-│   │   └── contracts/    # Compare & extract endpoints
-│   ├── login/
-│   └── signup/
+│   └── api/
+│       └── contracts/    # Compare & extract endpoints
 ├── components/
 │   ├── demo/             # Usage banner & limit dialog
 │   └── ui/               # Base UI components

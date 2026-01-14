@@ -1,18 +1,15 @@
 'use client';
 
 // Dashboard page - shows comparison history
-// Grayscale styling per UI guidelines - professional legal aesthetic
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from '@/lib/auth/client';
 import { Button } from '@/components/ui/button';
 import { ComparisonList } from '@/components/comparison';
 import { listComparisons } from '@/lib/storage';
 import type { Comparison } from '@/types/comparison';
 
 export default function DashboardPage() {
-  const { data: session } = useSession();
   const router = useRouter();
   const [comparisons, setComparisons] = useState<Comparison[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -20,10 +17,8 @@ export default function DashboardPage() {
   // Load comparisons from IndexedDB
   useEffect(() => {
     async function loadComparisons() {
-      if (!session?.user?.id) return;
-
       try {
-        const data = await listComparisons(session.user.id);
+        const data = await listComparisons('anonymous');
         setComparisons(data);
       } catch (error) {
         console.error('Failed to load comparisons:', error);
@@ -33,7 +28,7 @@ export default function DashboardPage() {
     }
 
     loadComparisons();
-  }, [session?.user?.id]);
+  }, []);
 
   return (
     <div className="space-y-8">

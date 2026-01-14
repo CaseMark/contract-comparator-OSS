@@ -6,7 +6,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Spinner } from '@phosphor-icons/react';
-import { useSession } from '@/lib/auth/client';
 import { useComparison } from '@/lib/contexts/comparison-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -19,7 +18,6 @@ import { cn } from '@/lib/utils';
 type InputMode = 'file' | 'text';
 
 export default function ComparePage() {
-  const { data: session } = useSession();
   const router = useRouter();
   const { setActiveComparison, isComparisonInProgress } = useComparison();
 
@@ -37,17 +35,14 @@ export default function ComparePage() {
   // Re-run when isComparisonInProgress changes to account for processing comparisons
   useEffect(() => {
     async function loadComparisonCount() {
-      const userId = session?.user?.id;
-      if (!userId) return;
-
-      const comparisons = await listComparisons(userId);
+      const comparisons = await listComparisons('anonymous');
       // Add 1 for the next comparison, plus 1 more if one is currently processing
       const baseCount = comparisons.length + 1;
       const adjustedCount = isComparisonInProgress ? baseCount + 1 : baseCount;
       setNextComparisonNumber(adjustedCount);
     }
     loadComparisonCount();
-  }, [session?.user?.id, isComparisonInProgress]);
+  }, [isComparisonInProgress]);
 
   // Generate default name if none provided
   const getComparisonName = () => {
@@ -70,10 +65,6 @@ export default function ComparePage() {
     try {
       let requestBody: Record<string, string | number | undefined>;
 
-      // Include user info for client-side auth
-      const userId = session?.user?.id || 'anonymous';
-      const organizationId = session?.session?.activeOrganizationId;
-
       const name = getComparisonName();
 
       if (mode === 'file' && sourceFile && targetFile) {
@@ -90,8 +81,6 @@ export default function ComparePage() {
           targetFileName: targetFile.name,
           name,
           comparisonNumber: nextComparisonNumber,
-          userId,
-          organizationId,
         };
       } else {
         requestBody = {
@@ -101,8 +90,6 @@ export default function ComparePage() {
           targetFileName: 'Modified Contract',
           name,
           comparisonNumber: nextComparisonNumber,
-          userId,
-          organizationId,
         };
       }
 

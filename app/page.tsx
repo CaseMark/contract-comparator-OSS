@@ -1,8 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useSession } from "@/lib/auth/client";
 import { Button } from "@/components/ui/button";
 import {
   Scales,
@@ -14,12 +12,9 @@ import {
 } from "@phosphor-icons/react";
 
 export default function Page() {
-  const { data: session } = useSession();
-  const router = useRouter();
-
   return (
     <main className="flex-1 flex flex-col">
-      {/* Hero section - paper-like with white card on warm background */}
+      {/* Hero section */}
       <section className="flex-1 flex flex-col items-center justify-center px-6 py-20">
         <div className="max-w-3xl text-center space-y-8">
           {/* Logo mark */}
@@ -40,33 +35,32 @@ export default function Page() {
             </p>
           </div>
 
-          {/* CTA buttons */}
+          {/* CTA button */}
           <div className="flex items-center justify-center gap-4 pt-2">
-            {session ? (
-              <Button size="lg" onClick={() => router.push("/dashboard")}>
-                Go to Dashboard
+            <Link href="/compare">
+              <Button size="lg">
+                Start Comparing
                 <ArrowRight size={16} data-icon="inline-end" />
               </Button>
-            ) : (
-              <>
-                <Link href="/signup">
-                  <Button size="lg">
-                    Get Started
-                    <ArrowRight size={16} data-icon="inline-end" />
-                  </Button>
-                </Link>
-                <Link href="/login">
-                  <Button variant="outline" size="lg">
-                    Sign In
-                  </Button>
-                </Link>
-              </>
-            )}
+            </Link>
           </div>
+
+          {/* Demo notice */}
+          <p className="text-xs text-muted-foreground">
+            Free demo with 24-hour session and $5 API credit.{" "}
+            <a
+              href="https://console.case.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 hover:text-foreground"
+            >
+              Get unlimited access
+            </a>
+          </p>
         </div>
       </section>
 
-      {/* Features section - cards on warm background */}
+      {/* Features section */}
       <section className="py-20 px-6 border-t border-border">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
@@ -101,6 +95,22 @@ export default function Page() {
           </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="py-6 px-6 border-t border-border text-center">
+        <p className="text-sm text-muted-foreground">
+          Powered by{" "}
+          <a
+            href="https://case.dev"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-foreground"
+          >
+            Case.dev
+          </a>
+          {" — "}The Legal AI Platform
+        </p>
+      </footer>
     </main>
   );
 }

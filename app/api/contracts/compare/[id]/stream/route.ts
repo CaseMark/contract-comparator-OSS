@@ -1,20 +1,12 @@
 // GET /api/contracts/compare/[id]/stream - SSE stream for comparison status updates
 
 import type { NextRequest } from 'next/server';
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
 import { comparisonStatus } from '../../route';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // Get session
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-
   const { id } = await params;
 
   // Check if comparison exists

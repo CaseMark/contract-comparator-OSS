@@ -1,47 +1,24 @@
 'use client';
 
-// Protected layout for authenticated pages
-// Includes comparison provider and navigation
+// App layout with navigation
+// No authentication required - browser isolation via localStorage/IndexedDB
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useSession, signOut } from '@/lib/auth/client';
 import { ComparisonProvider, useComparison } from '@/lib/contexts/comparison-context';
 import { UsageProvider } from '@/lib/contexts/usage-context';
-import { Button } from '@/components/ui/button';
 import { UsageBanner, LimitExceededDialog } from '@/components/demo';
 import { Spinner } from '@phosphor-icons/react';
 
-export default function ProtectedLayout({
+export default function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { data: session, isPending } = useSession();
-  const router = useRouter();
-
-  // Redirect to login if not authenticated (must be in useEffect to avoid render-time navigation)
-  useEffect(() => {
-    if (!isPending && !session) {
-      router.push('/login');
-    }
-  }, [isPending, session, router]);
-
-  // Show loading state while checking auth or redirecting
-  if (isPending || !session) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spinner size={32} className="animate-spin text-primary" />
-      </div>
-    );
-  }
-
   return (
     <UsageProvider>
       <ComparisonProvider>
         <div className="min-h-screen flex flex-col">
-          <Header userName={session?.user?.name || 'User'} />
+          <Header />
           <UsageBanner />
           <main className="flex-1 container mx-auto px-4 py-8 max-w-6xl">
             {children}
@@ -54,19 +31,7 @@ export default function ProtectedLayout({
   );
 }
 
-function Header({ userName }: { userName: string }) {
-  const router = useRouter();
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      router.push('/login');
-    } catch (error) {
-      console.error('Sign out failed:', error);
-      router.push('/login');
-    }
-  };
-
+function Header() {
   return (
     <header className="border-b border-border bg-card sticky top-0 z-50">
       <div className="container mx-auto px-4 max-w-6xl">
@@ -101,16 +66,17 @@ function Header({ userName }: { userName: string }) {
             </nav>
           </div>
 
-          {/* User menu */}
-          <div className="flex items-center gap-6 text-sm">
+          {/* Status indicator */}
+          <div className="flex items-center gap-4 text-sm">
             <ActiveComparisonIndicator />
-            <span className="text-muted-foreground">{userName}</span>
-            <button
-              onClick={handleSignOut}
+            <a
+              href="https://case.dev"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground transition-colors duration-150"
             >
-              Sign out
-            </button>
+              Powered by Case.dev
+            </a>
           </div>
         </div>
       </div>
