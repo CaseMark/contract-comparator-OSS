@@ -188,7 +188,7 @@ export default function ComparisonResultPage({
                 This usually takes 30-60 seconds.
               </p>
               <div className="mt-6 flex items-center gap-2 text-xs text-muted-foreground">
-                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                <div className="w-2 h-2 bg-primary animate-pulse" />
                 Processing...
               </div>
             </div>
@@ -271,7 +271,7 @@ export default function ComparisonResultPage({
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/50 w-fit">
+      <div className="flex items-center gap-2 p-1 bg-muted/50 w-fit">
         <Button
           variant={activeTab === 'summary' ? 'secondary' : 'ghost'}
           size="sm"

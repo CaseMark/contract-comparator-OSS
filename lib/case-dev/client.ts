@@ -67,6 +67,19 @@ interface ChatCompletionResponse {
       content: string;
     };
   }>;
+  usage?: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
+}
+
+export interface ChatCompletionResult {
+  content: string;
+  usage: {
+    inputTokens: number;
+    outputTokens: number;
+  };
 }
 
 interface EmbeddingResponse {
@@ -87,6 +100,22 @@ export async function chatCompletion(
     maxTokens?: number;
   }
 ): Promise<string> {
+  const result = await chatCompletionWithUsage(messages, options);
+  return result.content;
+}
+
+/**
+ * Chat completion that returns both content and usage statistics
+ * Use this version when you need to track API costs
+ */
+export async function chatCompletionWithUsage(
+  messages: ChatMessage[],
+  options?: {
+    model?: string;
+    temperature?: number;
+    maxTokens?: number;
+  }
+): Promise<ChatCompletionResult> {
   const model = options?.model || 'anthropic/claude-3-5-sonnet-20241022';
 
   const response = await apiRequest<ChatCompletionResponse>('/llm/v1/chat/completions', {
@@ -111,7 +140,28 @@ export async function chatCompletion(
     throw new Error('Case.dev response missing message content');
   }
 
-  return content;
+  // Extract usage (default to estimates if not provided)
+  const usage = response.usage || {
+    prompt_tokens: estimateTokens(messages.map(m => m.content).join(' ')),
+    completion_tokens: estimateTokens(content),
+    total_tokens: 0,
+  };
+
+  return {
+    content,
+    usage: {
+      inputTokens: usage.prompt_tokens,
+      outputTokens: usage.completion_tokens,
+    },
+  };
+}
+
+/**
+ * Rough token estimation when usage not provided by API
+ * ~4 characters per token for English text
+ */
+function estimateTokens(text: string): number {
+  return Math.ceil(text.length / 4);
 }
 
 export async function generateEmbeddings(

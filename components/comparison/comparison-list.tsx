@@ -32,7 +32,7 @@ export function ComparisonList({ comparisons, isLoading, className }: Comparison
   if (comparisons.length === 0) {
     return (
       <div className={cn('text-center py-12', className)}>
-        <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+        <div className="w-12 h-12 mx-auto mb-4 bg-muted flex items-center justify-center">
           <span className="text-2xl text-muted-foreground">∅</span>
         </div>
         <h3 className="text-lg font-medium mb-2">No comparisons yet</h3>

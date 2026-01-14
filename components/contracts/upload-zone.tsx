@@ -63,7 +63,7 @@ export function UploadZone({
         )}
         <textarea
           className={cn(
-            'w-full min-h-[200px] p-4 rounded-xl border bg-input/30 text-sm',
+            'w-full min-h-[200px] p-4 border bg-input/30 text-sm',
             'focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/30',
             'resize-y font-mono',
             isProcessing && 'opacity-50 cursor-not-allowed'
@@ -84,9 +84,9 @@ export function UploadZone({
         <p className="text-xs text-muted-foreground">{description}</p>
       )}
       {file ? (
-        <div className="flex items-center justify-between p-4 rounded-xl border bg-card">
+        <div className="flex items-center justify-between p-4 border bg-card">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+            <div className="w-10 h-10 bg-muted flex items-center justify-center">
               <span className="text-sm font-mono text-muted-foreground">
                 {file.name.split('.').pop()?.toUpperCase()}
               </span>
@@ -111,7 +111,7 @@ export function UploadZone({
         <div
           {...getRootProps()}
           className={cn(
-            'flex flex-col items-center justify-center p-8 rounded-xl border-2 border-dashed',
+            'flex flex-col items-center justify-center p-8 border-2 border-dashed',
             'cursor-pointer transition-all duration-200',
             isDragActive
               ? 'border-foreground/50 bg-muted/50'
@@ -120,7 +120,7 @@ export function UploadZone({
           )}
         >
           <input {...getInputProps()} />
-          <div className="p-3 rounded-full bg-muted mb-3">
+          <div className="p-3 bg-muted mb-3">
             <span className="text-xl text-muted-foreground">↑</span>
           </div>
           <p className="text-sm text-muted-foreground text-center">

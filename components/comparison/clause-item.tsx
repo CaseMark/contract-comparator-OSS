@@ -71,7 +71,7 @@ export function ClauseItem({ clauseMatch, isExpanded = false, onToggle }: Clause
       {expanded && (
         <CardContent className="space-y-4">
           {riskRationale && matchType !== 'identical' && (
-            <div className="p-3 rounded-lg bg-muted/50 text-sm">
+            <div className="p-3 bg-muted/50 text-sm">
               <span className="font-medium">Risk Assessment:</span> {riskRationale}
             </div>
           )}
@@ -81,7 +81,7 @@ export function ClauseItem({ clauseMatch, isExpanded = false, onToggle }: Clause
               <p className="text-xs font-medium text-muted-foreground uppercase">
                 Removed Clause
               </p>
-              <div className="p-4 rounded-lg bg-muted/50 border border-border">
+              <div className="p-4 bg-muted/50 border border-border">
                 <pre className="text-sm whitespace-pre-wrap font-mono text-muted-foreground line-through">
                   {sourceClauseContent}
                 </pre>
@@ -92,7 +92,7 @@ export function ClauseItem({ clauseMatch, isExpanded = false, onToggle }: Clause
               <p className="text-xs font-medium text-muted-foreground uppercase">
                 Added Clause
               </p>
-              <div className="p-4 rounded-lg bg-foreground/5 border border-dashed border-foreground/20">
+              <div className="p-4 bg-foreground/5 border border-dashed border-foreground/20">
                 <pre className="text-sm whitespace-pre-wrap font-mono text-foreground">
                   {targetClauseContent}
                 </pre>
@@ -106,7 +106,7 @@ export function ClauseItem({ clauseMatch, isExpanded = false, onToggle }: Clause
                 </p>
                 <div
                   className={cn(
-                    'p-4 rounded-lg border',
+                    'p-4 border',
                     matchType === 'identical'
                       ? 'bg-muted/30 border-border'
                       : 'bg-muted/50 border-border'
@@ -123,7 +123,7 @@ export function ClauseItem({ clauseMatch, isExpanded = false, onToggle }: Clause
                 </p>
                 <div
                   className={cn(
-                    'p-4 rounded-lg border',
+                    'p-4 border',
                     matchType === 'identical'
                       ? 'bg-muted/30 border-border'
                       : 'bg-foreground/5 border-foreground/20'

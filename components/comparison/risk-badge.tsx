@@ -50,7 +50,7 @@ export function RiskBadge({ score, level, showScore = true, size = 'default' }: 
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full',
+        'inline-flex items-center gap-1.5',
         config.style,
         sizeClasses[size]
       )}
@@ -75,7 +75,7 @@ export function OverallRiskScore({ score, className }: OverallRiskScoreProps) {
     <div className={cn('flex items-center gap-3', className)}>
       <div
         className={cn(
-          'flex items-center justify-center w-12 h-12 rounded-full border',
+          'flex items-center justify-center w-12 h-12 border',
           level === 'low' && 'bg-muted border-border',
           level === 'medium' && 'bg-muted border-foreground/20',
           level === 'high' && 'bg-foreground/10 border-foreground/30',

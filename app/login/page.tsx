@@ -26,7 +26,7 @@ function LoginContent() {
         {/* Logo */}
         <div className="flex flex-col items-center gap-3">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-primary/10">
+            <div className="p-2 bg-primary/10">
               <CaseDevLogo className="text-primary" />
             </div>
             <span className="text-xl font-semibold tracking-tight">Contract Comparator</span>

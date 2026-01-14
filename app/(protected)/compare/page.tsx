@@ -147,7 +147,7 @@ export default function ComparePage() {
       </div>
 
       {/* Input mode toggle */}
-      <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/50 w-fit">
+      <div className="flex items-center gap-2 p-1 bg-muted/50 w-fit">
         <Button
           variant={mode === 'file' ? 'secondary' : 'ghost'}
           size="sm"
@@ -209,7 +209,7 @@ export default function ComparePage() {
 
           {/* Error message */}
           {error && (
-            <div className="p-4 rounded-lg bg-destructive/10 text-destructive text-sm">
+            <div className="p-4 bg-destructive/10 text-destructive text-sm">
               {error}
             </div>
           )}
@@ -236,7 +236,7 @@ export default function ComparePage() {
 
       {/* Active comparison indicator */}
       {isComparisonInProgress && (
-        <div className="p-4 rounded-lg bg-muted text-sm">
+        <div className="p-4 bg-muted text-sm">
           <div className="flex items-center gap-2">
             <Spinner size={16} className="animate-spin text-muted-foreground" />
             <span>A comparison is already in progress. Please wait for it to complete.</span>

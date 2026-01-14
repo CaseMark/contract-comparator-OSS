@@ -24,7 +24,7 @@ export default function Page() {
         <div className="max-w-3xl text-center space-y-8">
           {/* Logo mark */}
           <div className="flex items-center justify-center">
-            <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20">
+            <div className="p-4 bg-primary/10 border border-primary/20">
               <Scales size={48} className="text-primary" weight="duotone" />
             </div>
           </div>
@@ -115,8 +115,8 @@ function FeatureCard({
   description: string;
 }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-6 hover:border-foreground/20 transition-colors">
-      <div className="p-2.5 rounded-lg bg-primary/10 w-fit mb-4">
+    <div className="border border-border bg-card p-6 hover:border-foreground/20 transition-colors">
+      <div className="p-2.5 bg-primary/10 w-fit mb-4">
         <Icon size={22} className="text-primary" weight="duotone" />
       </div>
       <h3 className="font-medium mb-2">{title}</h3>

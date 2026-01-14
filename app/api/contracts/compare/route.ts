@@ -17,6 +17,10 @@ import {
 } from '@/lib/case-dev/client';
 import type { Contract, Clause, ClauseType } from '@/types/contract';
 import type { Comparison, ClauseMatch, RiskLevel } from '@/types/comparison';
+import {
+  checkUsageLimitsServer,
+  parseUsageFromRequest,
+} from '@/lib/usage/server';
 
 // In-memory store for comparison status (in production, use Redis or similar)
 // This is needed because IndexedDB only works client-side
@@ -36,6 +40,21 @@ const comparisonStatus = new Map<string, {
 }>();
 
 export async function POST(request: NextRequest) {
+  // Check demo usage limits before processing
+  const usage = parseUsageFromRequest(request);
+  const usageCheck = checkUsageLimitsServer(usage);
+
+  if (!usageCheck.isAllowed) {
+    return NextResponse.json({
+      error: 'Demo limit exceeded',
+      reason: usageCheck.reason,
+      message: usageCheck.reason === 'time_exceeded'
+        ? 'Your demo session has expired.'
+        : 'You have reached the API usage limit for this demo.',
+      redirectUrl: 'https://console.case.dev',
+    }, { status: 429 });
+  }
+
   // Parse body
   const body = await request.json();
 

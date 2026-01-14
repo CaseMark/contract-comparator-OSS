@@ -4,11 +4,30 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { storeFile, deleteFile } from '@/lib/file-store';
+import {
+  checkUsageLimitsServer,
+  parseUsageFromRequest,
+} from '@/lib/usage/server';
 
 const CASEDEV_API_URL = process.env.CASEDEV_API_URL || 'https://api.case.dev';
 const CASEDEV_API_KEY = process.env.CASEDEV_API_KEY;
 
 export async function POST(request: NextRequest) {
+  // Check demo usage limits before processing
+  const usage = parseUsageFromRequest(request);
+  const usageCheck = checkUsageLimitsServer(usage);
+
+  if (!usageCheck.isAllowed) {
+    return NextResponse.json({
+      error: 'Demo limit exceeded',
+      reason: usageCheck.reason,
+      message: usageCheck.reason === 'time_exceeded'
+        ? 'Your demo session has expired.'
+        : 'You have reached the API usage limit for this demo.',
+      redirectUrl: 'https://console.case.dev',
+    }, { status: 429 });
+  }
+
   let fileId: string | null = null;
 
   try {
