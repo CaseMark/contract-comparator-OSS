@@ -34,7 +34,7 @@ export default function RootLayout({
           rel="stylesheet" 
         />
       </head>
-      <body className="antialiased min-h-screen flex flex-col bg-white dark:bg-neutral-950">
+      <body className="min-h-screen flex flex-col">
         <Providers>
           <main className="flex-1 flex flex-col">{children}</main>
           <CaseDevFooter />
