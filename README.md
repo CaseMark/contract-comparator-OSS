@@ -1,84 +1,180 @@
-# Create Legal App
+# Contract Comparator
 
-**The Agent-Optimized Legal Tech Starter Kit.**
+**AI-Powered Contract Clause Analysis**
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Next.js](https://img.shields.io/badge/Next.js-15.1-black)](https://nextjs.org)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38bdf8)](https://tailwindcss.com)
+[![Next.js](https://img.shields.io/badge/Next.js-16.1-black)](https://nextjs.org)
+[![Case.dev](https://img.shields.io/badge/Powered%20by-Case.dev-EB5600)](https://case.dev)
 
-> 🤖 **Built for Agents**: This repository is designed to be read by AI agents. It includes comprehensive internal documentation (`AGENTS.md` and `skills/`) that guides LLMs in generating production-ready legal tech code.
+Compare contracts side-by-side with AI-powered clause extraction, semantic matching, and risk analysis. Built on the [Case.dev](https://case.dev) legal AI platform.
 
-## 🚀 Overview
+## What It Does
 
-`create-legal-app` is a modern, opinionated starter kit for building legal technology applications. It provides a solid foundation with Next.js 15, Shadcn UI (Maia theme), and a structure pre-configured for complex legal workflows like document analysis, case management, and secure vaults.
+Contract Comparator analyzes two contracts and provides:
 
-**What makes this different?**
-Most starter kits are just code. This kit includes **Instructional Metadata** (Skills) that teach your AI coding assistant (Cursor, Windsurf, etc.) *exactly* how to implement semantic search, OCR pipelines, and legal-specific workflows using the Case.dev SDK.
+- **Clause Extraction** — Automatically identifies and categorizes clauses (indemnification, termination, liability limits, etc.)
+- **Semantic Matching** — Pairs similar clauses between documents, even when wording differs
+- **Risk Scoring** — Rates each clause change from 0-100 based on legal significance and business impact
+- **Executive Summary** — AI-generated overview of key findings, material changes, and recommendations
 
-## ✨ Features & Stack
+### Use Cases
 
-- **Framework**: [Next.js 15](https://nextjs.org) (App Router)
-- **Language**: TypeScript
-- **Styling**: [Tailwind CSS 4](https://tailwindcss.com) + [Shadcn UI](https://ui.shadcn.com) (Maia Preset)
-- **Font**: [Inter](https://rsms.me/inter/) & [Spectral](https://fonts.google.com/specimen/Spectral) (Serif for legal texts)
-- **Package Manager**: [Bun](https://bun.sh)
-- **Agent Skill System**: Dedicated documentation in `skills/` for:
-    - `case-dev`: Legal AI, Vaults, OCR
-    - `database`: Neon / Postgres schemas (Schema ready)
-    - `auth`: Authentication patterns
+- Compare a vendor's contract against your standard template
+- Review redlined agreements to understand what changed
+- Analyze competing proposals side-by-side
+- Audit contract versions for compliance drift
 
-## 🛠️ Getting Started
+---
 
-### 1. Initialize the Project
+## Demo Limits
+
+This demo provides free access with the following limits:
+
+| Limit | Value |
+|-------|-------|
+| **Session Duration** | 24 hours |
+| **API Credit** | $5 USD |
+
+Once either limit is reached, create an account at [console.case.dev](https://console.case.dev) for unlimited access.
+
+### How Costs Are Calculated
+
+- **LLM Processing**: ~$3 per 1M input tokens, ~$15 per 1M output tokens
+- **OCR (PDF/DOCX)**: $0.02 per page
+
+A typical contract comparison uses approximately $0.10-0.30 in API credits depending on document length.
+
+---
+
+## Data Storage
+
+This demo uses **browser-based storage** — no server database required.
+
+### localStorage
+
+Used for lightweight, synchronous data:
+
+| Key | Purpose |
+|-----|---------|
+| `ccc:session` | Local authentication session |
+| `ccc:user` | User profile data |
+| `ccc:demoUsage` | API usage tracking (tokens, cost, session start) |
+| `ccc:activeComparison` | Currently processing comparison ID |
+
+### IndexedDB
+
+Used for larger, structured data via the `contract-comparator` database:
+
+| Store | Purpose |
+|-------|---------|
+| `comparisons` | Completed comparison results with summaries |
+| `clauseMatches` | Individual clause match details and risk scores |
+| `contracts` | Uploaded contract metadata and extracted text |
+
+All data remains in your browser.
+
+---
+
+## Getting Started
+
+### 1. Clone and Install
 
 ```bash
-git clone https://github.com/CaseMark/create-legal-app.git my-legal-startup
-cd my-legal-startup
-bun install
+git clone https://github.com/CaseMark/contract-comparator-demo.git
+cd contract-comparator-demo
+npm install
 ```
 
 ### 2. Configure Environment
-
-Copy the example environment file:
 
 ```bash
 cp .env.example .env.local
 ```
 
-Fill in your API keys (get your Case.dev keys from the [Case.dev Console](https://console.case.dev)):
+Add your Case.dev API key (get one free at [console.case.dev](https://console.case.dev)):
 
 ```env
-# .env.local
-CASE_API_KEY=sk_case_...
-DATABASE_URL=postgres://...
+CASEDEV_API_KEY=your_api_key_here
 ```
 
 ### 3. Run Development Server
 
 ```bash
-bun dev
+npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see the starter page.
+Open [http://localhost:3000](http://localhost:3000).
 
-## 🤖 For AI Agents
+---
 
-**Are you an AI?** Start by reading **[AGENTS.md](./AGENTS.md)**.
+## Full API Access
 
-1.  **Context**: Read `AGENTS.md` to understand the project architecture and principles.
-2.  **Skills**: Before implementing a feature, check the `skills/` directory. For example, if the user asks for "Document Upload", read `skills/case-dev/SKILL.md`.
-3.  **Conventions**: stricta file naming and `kebab-case` for utilities.
+Ready to build your own legal AI application?
 
-## 📚 Documentation Structure
+### [→ Get Started at console.case.dev](https://console.case.dev)
 
-- **`/app`**: Next.js App Router (Pages, Layouts, API Routes)
-- **`/components`**: React components (UI primitives in `/ui`, custom in root)
-- **`/lib`**: Shared utilities (Place your `case-dev` client here)
-- **`/skills`**: **The Brain**. Contains Markdown files specifically for AI context.
-    - `/case-dev`: SDK usage, Vaults, Workflows
-    - `/database`: Schema design patterns
-    - `/auth`: Auth flow documentation
+Case.dev provides:
 
-## 📄 License
+- **LLM API** — OpenAI-compatible chat completions optimized for legal tasks
+- **OCR API** — Extract text from PDFs, DOCXs, and images
+- **Semantic Search** — Vector-based document retrieval
+- **Vaults** — Secure document storage with automatic indexing
+
+Pricing starts at $0.01 per credit with volume discounts available.
+
+### Resources
+
+- [Case.dev Documentation](https://case.dev/docs)
+- [API Reference](https://case.dev/docs/api)
+- [SDK Examples](https://github.com/CaseMark/case-dev-examples)
+
+---
+
+## Tech Stack
+
+- **Framework**: [Next.js 16](https://nextjs.org) (App Router)
+- **Language**: TypeScript
+- **Styling**: [Tailwind CSS 4](https://tailwindcss.com) + [Base UI](https://base-ui.com)
+- **AI Platform**: [Case.dev](https://case.dev)
+- **Storage**: localStorage + IndexedDB (browser-only)
+- **Authentication**: Local auth (demo) or Better Auth (production)
+
+---
+
+## Project Structure
+
+```
+├── app/
+│   ├── (protected)/      # Authenticated routes
+│   │   ├── dashboard/    # Comparison history
+│   │   └── compare/      # New comparison & results
+│   ├── api/
+│   │   └── contracts/    # Compare & extract endpoints
+│   ├── login/
+│   └── signup/
+├── components/
+│   ├── demo/             # Usage banner & limit dialog
+│   └── ui/               # Base UI components
+├── lib/
+│   ├── case-dev/         # Case.dev API client
+│   ├── usage/            # Demo limit tracking
+│   ├── storage/          # localStorage & IndexedDB helpers
+│   └── contexts/         # React contexts
+└── types/                # TypeScript definitions
+```
+
+---
+
+## License
 
 This project is licensed under the [Apache 2.0 License](LICENSE).
+
+---
+
+<p align="center">
+  <a href="https://case.dev">
+    <img src="https://case.dev/logo.svg" alt="Case.dev" width="120" />
+  </a>
+  <br />
+  <sub>Built with Case.dev — The Legal AI Platform</sub>
+</p>
