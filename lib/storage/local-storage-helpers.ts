@@ -14,6 +14,7 @@ export const STORAGE_KEYS = {
   ACTIVE_COMPARISON: 'ccc:activeComparison',
   PREFERENCES: (userId: string) => `ccc:prefs:${userId}`,
   STORAGE_VERSION: 'ccc:version',
+  COMPARISON_COUNTER: 'ccc:comparisonCounter',
 } as const;
 
 // Current storage schema version - increment when making breaking changes

@@ -1,8 +1,8 @@
 'use client';
 
 // Match type badge component
+// Grayscale styling per UI guidelines - professional legal aesthetic
 
-import { Equals, PencilSimple, Plus, Minus } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import type { MatchType } from '@/types/comparison';
 
@@ -14,36 +14,30 @@ interface MatchBadgeProps {
 const matchConfig: Record<
   MatchType,
   {
-    color: string;
-    icon: typeof Equals;
+    style: string;
     label: string;
   }
 > = {
   identical: {
-    color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
-    icon: Equals,
+    style: 'bg-muted text-muted-foreground',
     label: 'Unchanged',
   },
   modified: {
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-    icon: PencilSimple,
+    style: 'bg-foreground/10 text-foreground border border-foreground/20',
     label: 'Modified',
   },
   added: {
-    color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-    icon: Plus,
+    style: 'bg-muted text-foreground border border-dashed border-foreground/30',
     label: 'Added',
   },
   removed: {
-    color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-    icon: Minus,
+    style: 'bg-foreground/5 text-muted-foreground line-through',
     label: 'Removed',
   },
 };
 
 export function MatchBadge({ matchType, size = 'default' }: MatchBadgeProps) {
   const config = matchConfig[matchType];
-  const Icon = config.icon;
 
   const sizeClasses = {
     xs: 'px-1.5 py-0.5 text-[10px]',
@@ -51,21 +45,14 @@ export function MatchBadge({ matchType, size = 'default' }: MatchBadgeProps) {
     default: 'px-2.5 py-1 text-sm',
   };
 
-  const iconSize = {
-    xs: 10,
-    sm: 12,
-    default: 14,
-  };
-
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full font-medium',
-        config.color,
+        'inline-flex items-center gap-1.5 rounded-full font-medium',
+        config.style,
         sizeClasses[size]
       )}
     >
-      <Icon size={iconSize[size]} weight="bold" />
       {config.label}
     </span>
   );

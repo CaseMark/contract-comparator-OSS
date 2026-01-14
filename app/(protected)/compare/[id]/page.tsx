@@ -258,6 +258,11 @@ export default function ComparisonResultPage({
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">{comparison.name}</h1>
+          {(comparison.sourceFileName || comparison.targetFileName) && (
+            <p className="text-base text-muted-foreground mt-1">
+              {comparison.sourceFileName || 'Source'} vs {comparison.targetFileName || 'Target'}
+            </p>
+          )}
           <p className="text-sm text-muted-foreground mt-1">
             Compared on {formatDateTime(comparison.createdAt)}
           </p>

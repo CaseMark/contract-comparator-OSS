@@ -1,10 +1,9 @@
 'use client';
 
 // Risk badge component for displaying risk scores and levels
+// Grayscale styling per UI guidelines - professional legal aesthetic
 
-import { Warning, ShieldWarning, CheckCircle, ShieldCheck } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
 import type { RiskLevel } from '@/types/comparison';
 
 interface RiskBadgeProps {
@@ -17,36 +16,30 @@ interface RiskBadgeProps {
 const riskConfig: Record<
   RiskLevel,
   {
-    color: string;
-    icon: typeof Warning;
+    style: string;
     label: string;
   }
 > = {
   low: {
-    color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-    icon: CheckCircle,
+    style: 'bg-muted text-muted-foreground',
     label: 'Low Risk',
   },
   medium: {
-    color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
-    icon: Warning,
+    style: 'bg-muted text-foreground',
     label: 'Medium Risk',
   },
   high: {
-    color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
-    icon: ShieldWarning,
+    style: 'bg-foreground/10 text-foreground font-semibold',
     label: 'High Risk',
   },
   critical: {
-    color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-    icon: ShieldWarning,
+    style: 'bg-foreground text-background font-semibold',
     label: 'Critical',
   },
 };
 
 export function RiskBadge({ score, level, showScore = true, size = 'default' }: RiskBadgeProps) {
   const config = riskConfig[level];
-  const Icon = config.icon;
 
   const sizeClasses = {
     xs: 'px-1.5 py-0.5 text-[10px]',
@@ -54,27 +47,20 @@ export function RiskBadge({ score, level, showScore = true, size = 'default' }: 
     default: 'px-2.5 py-1 text-sm',
   };
 
-  const iconSize = {
-    xs: 10,
-    sm: 12,
-    default: 14,
-  };
-
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full font-medium',
-        config.color,
+        'inline-flex items-center gap-1.5 rounded-full',
+        config.style,
         sizeClasses[size]
       )}
     >
-      <Icon size={iconSize[size]} weight="bold" />
-      {showScore ? score : config.label}
+      <span className="font-mono">{showScore ? score : config.label}</span>
     </span>
   );
 }
 
-// Overall risk score display
+// Overall risk score display (icon style for detail pages)
 interface OverallRiskScoreProps {
   score: number;
   className?: string;
@@ -84,34 +70,50 @@ export function OverallRiskScore({ score, className }: OverallRiskScoreProps) {
   const level: RiskLevel =
     score >= 75 ? 'critical' : score >= 50 ? 'high' : score >= 25 ? 'medium' : 'low';
   const config = riskConfig[level];
-  const Icon = level === 'low' ? ShieldCheck : ShieldWarning;
 
   return (
     <div className={cn('flex items-center gap-3', className)}>
       <div
         className={cn(
-          'flex items-center justify-center w-12 h-12 rounded-full',
-          level === 'low' && 'bg-green-100 dark:bg-green-900/30',
-          level === 'medium' && 'bg-amber-100 dark:bg-amber-900/30',
-          level === 'high' && 'bg-orange-100 dark:bg-orange-900/30',
-          level === 'critical' && 'bg-red-100 dark:bg-red-900/30'
+          'flex items-center justify-center w-12 h-12 rounded-full border',
+          level === 'low' && 'bg-muted border-border',
+          level === 'medium' && 'bg-muted border-foreground/20',
+          level === 'high' && 'bg-foreground/10 border-foreground/30',
+          level === 'critical' && 'bg-foreground text-background border-foreground'
         )}
       >
-        <Icon
-          size={24}
-          weight="duotone"
+        <span
           className={cn(
-            level === 'low' && 'text-green-600 dark:text-green-400',
-            level === 'medium' && 'text-amber-600 dark:text-amber-400',
-            level === 'high' && 'text-orange-600 dark:text-orange-400',
-            level === 'critical' && 'text-red-600 dark:text-red-400'
+            'font-mono text-lg font-semibold',
+            level === 'critical' ? 'text-background' : 'text-foreground'
           )}
-        />
+        >
+          {score}
+        </span>
       </div>
       <div>
-        <div className="text-2xl font-semibold">{score}</div>
         <div className="text-sm text-muted-foreground">{config.label}</div>
       </div>
     </div>
+  );
+}
+
+// Inline risk score display (text style for list views)
+interface InlineRiskScoreProps {
+  score: number;
+  className?: string;
+}
+
+export function InlineRiskScore({ score, className }: InlineRiskScoreProps) {
+  const level: RiskLevel =
+    score >= 75 ? 'critical' : score >= 50 ? 'high' : score >= 25 ? 'medium' : 'low';
+  const config = riskConfig[level];
+
+  return (
+    <span className={cn('text-sm text-muted-foreground', className)}>
+      <span className="font-semibold text-foreground">{score}</span>
+      {' '}
+      {config.label}
+    </span>
   );
 }

@@ -1,13 +1,14 @@
 'use client';
 
 // List of past comparisons (dashboard view)
+// Grayscale styling per UI guidelines - professional legal aesthetic
 
 import { useRouter } from 'next/navigation';
-import { FileText, ArrowRight, Clock, Spinner } from '@phosphor-icons/react';
+import { Spinner } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { OverallRiskScore } from './risk-badge';
+import { InlineRiskScore } from './risk-badge';
 import { formatRelativeTime, getStatusLabel, getStatusColor } from '@/lib/contracts/utils';
 import type { Comparison } from '@/types/comparison';
 
@@ -31,14 +32,15 @@ export function ComparisonList({ comparisons, isLoading, className }: Comparison
   if (comparisons.length === 0) {
     return (
       <div className={cn('text-center py-12', className)}>
-        <FileText size={48} className="mx-auto text-muted-foreground/50 mb-4" weight="duotone" />
+        <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+          <span className="text-2xl text-muted-foreground">∅</span>
+        </div>
         <h3 className="text-lg font-medium mb-2">No comparisons yet</h3>
         <p className="text-sm text-muted-foreground mb-4">
           Start by comparing two contracts
         </p>
         <Button onClick={() => router.push('/compare')}>
           New Comparison
-          <ArrowRight size={16} data-icon="inline-end" />
         </Button>
       </div>
     );
@@ -67,20 +69,16 @@ function ComparisonRow({ comparison }: ComparisonRowProps) {
   return (
     <Card
       className={cn(
-        'cursor-pointer transition-all hover:ring-2 hover:ring-primary/20',
+        'cursor-pointer transition-all hover:ring-2 hover:ring-foreground/10',
         isProcessing && 'opacity-70'
       )}
       onClick={() => router.push(`/compare/${id}`)}
     >
       <CardContent className="flex items-center justify-between gap-4 py-4">
         <div className="flex items-center gap-4 min-w-0">
-          <div className="p-2 rounded-lg bg-primary/10">
-            <FileText size={20} className="text-primary" weight="duotone" />
-          </div>
           <div className="min-w-0">
-            <h3 className="font-medium truncate">{name || 'Untitled Comparison'}</h3>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Clock size={12} />
+            <h3 className="text-lg font-medium truncate">{name || 'Untitled Comparison'}</h3>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-0.5">
               <span>{formatRelativeTime(createdAt)}</span>
               {!isCompleted && (
                 <>
@@ -96,12 +94,12 @@ function ComparisonRow({ comparison }: ComparisonRowProps) {
 
         <div className="flex items-center gap-4 shrink-0">
           {isCompleted && (
-            <OverallRiskScore score={overallRiskScore} className="hidden sm:flex" />
+            <InlineRiskScore score={overallRiskScore} />
           )}
           {isProcessing && (
-            <Spinner size={20} className="animate-spin text-primary" />
+            <Spinner size={20} className="animate-spin text-muted-foreground" />
           )}
-          <ArrowRight size={16} className="text-muted-foreground" />
+          <span className="text-muted-foreground">→</span>
         </div>
       </CardContent>
     </Card>

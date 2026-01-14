@@ -240,6 +240,23 @@ export async function listComparisons(
   }
 }
 
+export async function getComparisonCount(userId: string): Promise<number> {
+  if (!isBrowser()) return 0;
+
+  try {
+    const db = getDatabase();
+    return await db.comparisons.where('createdBy').equals(userId).count();
+  } catch (error) {
+    console.error('[Storage] Failed to get comparison count:', error);
+    return 0;
+  }
+}
+
+export async function getNextComparisonNumber(userId: string): Promise<number> {
+  const count = await getComparisonCount(userId);
+  return count + 1;
+}
+
 export async function deleteComparison(id: string): Promise<boolean> {
   if (!isBrowser()) return false;
 

@@ -10,8 +10,11 @@ export type DiffType = 'unchanged' | 'added' | 'removed';
 export interface Comparison {
   id: string;
   name?: string;
+  comparisonNumber?: number;
   sourceContractId: string;
   targetContractId: string;
+  sourceFileName?: string;
+  targetFileName?: string;
   createdAt: string;
   createdBy: string;
   organizationId?: string;

@@ -17,26 +17,26 @@ export function getRiskLevel(score: number): RiskLevel {
 export function getRiskColor(level: RiskLevel): string {
   switch (level) {
     case 'critical':
-      return 'text-red-600 bg-red-50 border-red-200';
+      return 'text-foreground bg-foreground/10 border-foreground/30';
     case 'high':
-      return 'text-orange-600 bg-orange-50 border-orange-200';
+      return 'text-foreground bg-foreground/5 border-foreground/20';
     case 'medium':
-      return 'text-amber-600 bg-amber-50 border-amber-200';
+      return 'text-muted-foreground bg-muted border-border';
     case 'low':
-      return 'text-green-600 bg-green-50 border-green-200';
+      return 'text-muted-foreground bg-muted/50 border-border';
   }
 }
 
 export function getRiskBadgeColor(level: RiskLevel): string {
   switch (level) {
     case 'critical':
-      return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+      return 'bg-foreground text-background';
     case 'high':
-      return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
+      return 'bg-foreground/10 text-foreground font-semibold';
     case 'medium':
-      return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300';
+      return 'bg-muted text-foreground';
     case 'low':
-      return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      return 'bg-muted text-muted-foreground';
   }
 }
 
@@ -63,26 +63,26 @@ export function calculateOverallRisk(scores: number[]): number {
 export function getMatchTypeColor(matchType: MatchType): string {
   switch (matchType) {
     case 'identical':
-      return 'text-gray-600 bg-gray-50 border-gray-200';
+      return 'text-muted-foreground bg-muted/50 border-border';
     case 'modified':
-      return 'text-blue-600 bg-blue-50 border-blue-200';
+      return 'text-foreground bg-foreground/5 border-foreground/20';
     case 'added':
-      return 'text-green-600 bg-green-50 border-green-200';
+      return 'text-foreground bg-muted border-dashed border-foreground/30';
     case 'removed':
-      return 'text-red-600 bg-red-50 border-red-200';
+      return 'text-muted-foreground bg-muted/50 border-border line-through';
   }
 }
 
 export function getMatchTypeBadgeColor(matchType: MatchType): string {
   switch (matchType) {
     case 'identical':
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+      return 'bg-muted text-muted-foreground';
     case 'modified':
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      return 'bg-foreground/10 text-foreground border border-foreground/20';
     case 'added':
-      return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      return 'bg-muted text-foreground border border-dashed border-foreground/30';
     case 'removed':
-      return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+      return 'bg-foreground/5 text-muted-foreground line-through';
   }
 }
 
@@ -106,15 +106,15 @@ export function getMatchTypeLabel(matchType: MatchType): string {
 export function getStatusColor(status: string): string {
   switch (status) {
     case 'completed':
-      return 'text-green-600 bg-green-50';
+      return 'text-foreground';
     case 'processing':
-      return 'text-blue-600 bg-blue-50';
+      return 'text-muted-foreground';
     case 'pending':
-      return 'text-amber-600 bg-amber-50';
+      return 'text-muted-foreground';
     case 'failed':
-      return 'text-red-600 bg-red-50';
+      return 'text-foreground font-medium';
     default:
-      return 'text-gray-600 bg-gray-50';
+      return 'text-muted-foreground';
   }
 }
 

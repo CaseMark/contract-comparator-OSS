@@ -59,6 +59,7 @@ export const createComparisonWithTextSchema = z.object({
     .max(MAX_NAME_LENGTH, `Name must be less than ${MAX_NAME_LENGTH} characters`)
     .transform(sanitizeString)
     .optional(),
+  comparisonNumber: z.number().int().positive().optional(),
   sourceText: z
     .string()
     .min(1, 'Source contract text is required')

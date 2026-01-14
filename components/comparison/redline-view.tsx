@@ -2,6 +2,7 @@
 
 // Side-by-side redline view with word-level diff highlighting
 // Uses the 'diff' library for granular change detection
+// Grayscale styling per UI guidelines - professional legal aesthetic
 
 import { useMemo } from 'react';
 import * as Diff from 'diff';
@@ -61,7 +62,7 @@ function SourceDiffView({ changes }: { changes: Diff.Change[] }) {
           return (
             <span
               key={index}
-              className="bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 line-through decoration-red-500/50"
+              className="bg-muted text-muted-foreground line-through"
             >
               {change.value}
             </span>
@@ -89,7 +90,7 @@ function TargetDiffView({ changes }: { changes: Diff.Change[] }) {
           return (
             <span
               key={index}
-              className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300"
+              className="bg-foreground/10 text-foreground font-medium underline decoration-foreground/30"
             >
               {change.value}
             </span>
@@ -164,12 +165,12 @@ export function RedlineView({ sourceContract, targetContract, clauseMatches }: R
       {/* Compact stats and legend */}
       <div className="flex flex-wrap items-center gap-4 text-xs px-1">
         <span className="font-medium text-muted-foreground">Changes:</span>
-        <span className="text-green-700 dark:text-green-400">+{stats.additions}</span>
-        <span className="text-red-700 dark:text-red-400">-{stats.deletions}</span>
+        <span className="text-foreground">+{stats.additions}</span>
+        <span className="text-muted-foreground">−{stats.deletions}</span>
         <span className="text-muted-foreground">{stats.unchanged} unchanged</span>
         <span className="text-muted-foreground">|</span>
-        <span className="bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 line-through px-1 rounded">deleted</span>
-        <span className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 px-1 rounded">added</span>
+        <span className="bg-muted text-muted-foreground line-through px-1 rounded">deleted</span>
+        <span className="bg-foreground/10 text-foreground underline px-1 rounded">added</span>
       </div>
 
       {/* Side-by-side documents */}

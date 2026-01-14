@@ -25,6 +25,7 @@ const publicRoutes = [
   "/login",
   "/signup",
   "/api/auth", // Better Auth API routes
+  "/api/files", // File serving for external services (OCR)
 ];
 
 /**

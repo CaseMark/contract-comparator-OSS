@@ -1,8 +1,8 @@
 'use client';
 
 // Executive summary panel
+// Grayscale styling per UI guidelines - professional legal aesthetic
 
-import { Lightbulb, Warning, CheckCircle, ArrowRight } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { ExecutiveSummary as ExecutiveSummaryType, RiskLevel } from '@/types/comparison';
@@ -15,15 +15,17 @@ interface ExecutiveSummaryProps {
 export function ExecutiveSummary({ summary, className }: ExecutiveSummaryProps) {
   const { overview, keyFindings, materialChanges, riskHighlights, recommendations } = summary;
 
-  const severityIcon = (severity: RiskLevel) => {
+  // Severity indicator using typography instead of colors
+  const severityMarker = (severity: RiskLevel) => {
     switch (severity) {
       case 'critical':
+        return <span className="font-semibold text-foreground">●</span>;
       case 'high':
-        return <Warning size={16} className="text-red-500" weight="fill" />;
+        return <span className="font-medium text-foreground">●</span>;
       case 'medium':
-        return <Warning size={16} className="text-amber-500" weight="fill" />;
+        return <span className="text-muted-foreground">○</span>;
       case 'low':
-        return <CheckCircle size={16} className="text-green-500" weight="fill" />;
+        return <span className="text-muted-foreground/50">○</span>;
     }
   };
 
@@ -32,10 +34,7 @@ export function ExecutiveSummary({ summary, className }: ExecutiveSummaryProps) 
       {/* Overview */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Lightbulb size={20} weight="duotone" className="text-primary" />
-            Overview
-          </CardTitle>
+          <CardTitle>Overview</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm leading-relaxed">{overview}</p>
@@ -52,7 +51,7 @@ export function ExecutiveSummary({ summary, className }: ExecutiveSummaryProps) 
             <ul className="space-y-3">
               {keyFindings.map((finding, index) => (
                 <li key={index} className="flex items-start gap-3">
-                  {severityIcon(finding.severity)}
+                  {severityMarker(finding.severity)}
                   <div className="flex-1 min-w-0">
                     <span className="text-xs font-medium text-muted-foreground uppercase">
                       {finding.clauseType.replace('_', ' ')}
@@ -76,7 +75,7 @@ export function ExecutiveSummary({ summary, className }: ExecutiveSummaryProps) 
             <ul className="space-y-2">
               {materialChanges.map((change, index) => (
                 <li key={index} className="flex items-start gap-2 text-sm">
-                  <ArrowRight size={16} className="text-muted-foreground shrink-0 mt-0.5" />
+                  <span className="text-muted-foreground shrink-0">→</span>
                   <span>{change}</span>
                 </li>
               ))}
@@ -89,17 +88,13 @@ export function ExecutiveSummary({ summary, className }: ExecutiveSummaryProps) 
       {riskHighlights.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-red-600 dark:text-red-400">Risk Highlights</CardTitle>
+            <CardTitle>Risk Highlights</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
               {riskHighlights.map((highlight, index) => (
                 <li key={index} className="flex items-start gap-2 text-sm">
-                  <Warning
-                    size={16}
-                    className="text-red-500 shrink-0 mt-0.5"
-                    weight="fill"
-                  />
+                  <span className="text-foreground font-semibold shrink-0">!</span>
                   <span>{highlight}</span>
                 </li>
               ))}
@@ -112,17 +107,13 @@ export function ExecutiveSummary({ summary, className }: ExecutiveSummaryProps) 
       {recommendations.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-primary">Recommendations</CardTitle>
+            <CardTitle>Recommendations</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
               {recommendations.map((recommendation, index) => (
                 <li key={index} className="flex items-start gap-2 text-sm">
-                  <CheckCircle
-                    size={16}
-                    className="text-primary shrink-0 mt-0.5"
-                    weight="fill"
-                  />
+                  <span className="text-muted-foreground shrink-0">{index + 1}.</span>
                   <span>{recommendation}</span>
                 </li>
               ))}

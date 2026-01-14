@@ -25,7 +25,7 @@ function LoginContent() {
         {/* Login card */}
         <Card>
           <CardHeader className="text-center">
-            <CardTitle>Welcome back</CardTitle>
+            <CardTitle>Welcome Back</CardTitle>
             <CardDescription>Sign in to your account to continue</CardDescription>
           </CardHeader>
           <CardContent>

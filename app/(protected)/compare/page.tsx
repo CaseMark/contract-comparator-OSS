@@ -1,10 +1,11 @@
 'use client';
 
 // New comparison page - upload and compare contracts
+// Grayscale styling per UI guidelines - professional legal aesthetic
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Spinner, FileText, TextAa } from '@phosphor-icons/react';
+import { Spinner } from '@phosphor-icons/react';
 import { useSession } from '@/lib/auth/client';
 import { useComparison } from '@/lib/contexts/comparison-context';
 import { Button } from '@/components/ui/button';
@@ -67,7 +68,7 @@ export default function ComparePage() {
     setError(null);
 
     try {
-      let requestBody: Record<string, string>;
+      let requestBody: Record<string, string | number | undefined>;
 
       // Include user info for client-side auth
       const userId = session?.user?.id || 'anonymous';
@@ -76,9 +77,11 @@ export default function ComparePage() {
       const name = getComparisonName();
 
       if (mode === 'file' && sourceFile && targetFile) {
-        // Read file contents
-        const sourceContent = await readFileAsText(sourceFile);
-        const targetContent = await readFileAsText(targetFile);
+        // Extract text from files (uses OCR for PDF/DOCX)
+        const [sourceContent, targetContent] = await Promise.all([
+          extractTextFromFile(sourceFile),
+          extractTextFromFile(targetFile),
+        ]);
 
         requestBody = {
           sourceText: sourceContent,
@@ -86,9 +89,10 @@ export default function ComparePage() {
           sourceFileName: sourceFile.name,
           targetFileName: targetFile.name,
           name,
+          comparisonNumber: nextComparisonNumber,
           userId,
           organizationId,
-        } as Record<string, string>;
+        };
       } else {
         requestBody = {
           sourceText: sourceText.trim(),
@@ -96,9 +100,10 @@ export default function ComparePage() {
           sourceFileName: 'Original Contract',
           targetFileName: 'Modified Contract',
           name,
+          comparisonNumber: nextComparisonNumber,
           userId,
           organizationId,
-        } as Record<string, string>;
+        };
       }
 
       // Submit comparison request
@@ -148,7 +153,6 @@ export default function ComparePage() {
           size="sm"
           onClick={() => setMode('file')}
         >
-          <FileText size={16} data-icon="inline-start" />
           Upload Files
         </Button>
         <Button
@@ -156,7 +160,6 @@ export default function ComparePage() {
           size="sm"
           onClick={() => setMode('text')}
         >
-          <TextAa size={16} data-icon="inline-start" />
           Paste Text
         </Button>
       </div>
@@ -224,10 +227,7 @@ export default function ComparePage() {
                   Processing...
                 </>
               ) : (
-                <>
-                  Compare Contracts
-                  <ArrowRight size={16} data-icon="inline-end" />
-                </>
+                'Compare Contracts'
               )}
             </Button>
           </div>
@@ -236,9 +236,9 @@ export default function ComparePage() {
 
       {/* Active comparison indicator */}
       {isComparisonInProgress && (
-        <div className="p-4 rounded-lg bg-primary/10 text-sm">
+        <div className="p-4 rounded-lg bg-muted text-sm">
           <div className="flex items-center gap-2">
-            <Spinner size={16} className="animate-spin text-primary" />
+            <Spinner size={16} className="animate-spin text-muted-foreground" />
             <span>A comparison is already in progress. Please wait for it to complete.</span>
           </div>
         </div>
@@ -247,12 +247,21 @@ export default function ComparePage() {
   );
 }
 
-// Helper to read file as text
-async function readFileAsText(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(new Error('Failed to read file'));
-    reader.readAsText(file);
+// Helper to extract text from file using OCR API
+async function extractTextFromFile(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch('/api/contracts/extract', {
+    method: 'POST',
+    body: formData,
   });
+
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.error || 'Failed to extract text from file');
+  }
+
+  const data = await response.json();
+  return data.text;
 }

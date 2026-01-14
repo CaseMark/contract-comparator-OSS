@@ -1,9 +1,9 @@
 'use client';
 
 // List of clause comparisons with filtering
+// Grayscale styling per UI guidelines - professional legal aesthetic
 
 import { useState, useMemo } from 'react';
-import { Funnel } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { ClauseItem } from './clause-item';
 import type { ClauseMatch, MatchType, RiskLevel } from '@/types/comparison';
@@ -80,12 +80,12 @@ export function ClauseList({ clauseMatches, className }: ClauseListProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
           <span>{stats.total} clauses</span>
-          <span className="text-blue-600">{stats.modified} modified</span>
-          <span className="text-green-600">{stats.added} added</span>
-          <span className="text-red-600">{stats.removed} removed</span>
+          <span className="border-l pl-4">{stats.modified} modified</span>
+          <span>{stats.added} added</span>
+          <span>{stats.removed} removed</span>
         </div>
         <div className="flex items-center gap-2">
-          <Funnel size={16} className="text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">Filter:</span>
           <div className="flex flex-wrap gap-1">
             {filterOptions.map((option) => (
               <Button

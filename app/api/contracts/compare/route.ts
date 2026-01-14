@@ -27,6 +27,12 @@ const comparisonStatus = new Map<string, {
   clauseMatches?: ClauseMatch[];
   sourceContract?: Contract;
   targetContract?: Contract;
+  metadata?: {
+    name?: string;
+    comparisonNumber?: number;
+    sourceFileName?: string;
+    targetFileName?: string;
+  };
 }>();
 
 export async function POST(request: NextRequest) {
@@ -45,7 +51,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: validation.error }, { status: 400 });
   }
 
-  const { sourceText, targetText, sourceFileName, targetFileName, name } = validation.data;
+  const { sourceText, targetText, sourceFileName, targetFileName, name, comparisonNumber } = validation.data;
 
   // Generate IDs
   const comparisonId = generateId();
@@ -82,9 +88,12 @@ export async function POST(request: NextRequest) {
   // Create initial comparison record
   const comparison: Comparison = {
     id: comparisonId,
-    name: name || `${sourceContract.name} vs ${targetContract.name}`,
+    name: name || `Comparison ${String(comparisonNumber || 1).padStart(2, '0')}`,
+    comparisonNumber: comparisonNumber || undefined,
     sourceContractId,
     targetContractId,
+    sourceFileName: sourceContract.fileName,
+    targetFileName: targetContract.fileName,
     createdAt: new Date().toISOString(),
     createdBy: userId,
     organizationId: organizationId || undefined,
@@ -92,8 +101,16 @@ export async function POST(request: NextRequest) {
     overallRiskScore: 0,
   };
 
-  // Store initial status
-  comparisonStatus.set(comparisonId, { status: 'pending' });
+  // Store initial status with comparison metadata
+  comparisonStatus.set(comparisonId, {
+    status: 'pending',
+    metadata: {
+      name: comparison.name,
+      comparisonNumber: comparison.comparisonNumber,
+      sourceFileName: comparison.sourceFileName,
+      targetFileName: comparison.targetFileName,
+    },
+  });
 
   // Fire and forget - process in background
   processComparisonInBackground(
@@ -130,8 +147,12 @@ async function processComparisonInBackground(
   targetText: string
 ): Promise<void> {
   try {
-    // Update status to processing
-    comparisonStatus.set(comparisonId, { status: 'processing' });
+    // Update status to processing (preserve metadata)
+    const currentStatus = comparisonStatus.get(comparisonId);
+    comparisonStatus.set(comparisonId, {
+      status: 'processing',
+      metadata: currentStatus?.metadata,
+    });
 
     console.log(`[Comparison ${comparisonId}] Starting clause extraction...`);
 
@@ -312,11 +333,17 @@ async function processComparisonInBackground(
     console.log(`[Comparison ${comparisonId}] Comparison complete!`);
 
     // Build final comparison result
+    // Get the stored metadata to preserve name and number from initial request
+    const storedStatus = comparisonStatus.get(comparisonId);
+    const metadata = storedStatus?.metadata;
     const finalComparison: Comparison = {
       id: comparisonId,
-      name: `${sourceContract.name} vs ${targetContract.name}`,
+      name: metadata?.name || `Comparison`,
+      comparisonNumber: metadata?.comparisonNumber,
       sourceContractId: sourceContract.id,
       targetContractId: targetContract.id,
+      sourceFileName: metadata?.sourceFileName || sourceContract.fileName,
+      targetFileName: metadata?.targetFileName || targetContract.fileName,
       createdAt: new Date().toISOString(),
       createdBy: sourceContract.uploadedBy,
       organizationId: sourceContract.organizationId,

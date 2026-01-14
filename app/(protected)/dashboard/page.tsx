@@ -1,10 +1,10 @@
 'use client';
 
 // Dashboard page - shows comparison history
+// Grayscale styling per UI guidelines - professional legal aesthetic
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus } from '@phosphor-icons/react';
 import { useSession } from '@/lib/auth/client';
 import { Button } from '@/components/ui/button';
 import { ComparisonList } from '@/components/comparison';
@@ -46,7 +46,6 @@ export default function DashboardPage() {
           </p>
         </div>
         <Button onClick={() => router.push('/compare')}>
-          <Plus size={16} data-icon="inline-start" />
           New Comparison
         </Button>
       </div>

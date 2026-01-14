@@ -1,9 +1,9 @@
 'use client';
 
 // Individual clause item with diff display
+// Grayscale styling per UI guidelines - professional legal aesthetic
 
 import { useState } from 'react';
-import { CaretDown, CaretUp } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -62,7 +62,7 @@ export function ClauseItem({ clauseMatch, isExpanded = false, onToggle }: Clause
               <RiskBadge score={riskScore} level={riskLevel} size="sm" />
             )}
             <Button variant="ghost" size="icon-sm">
-              {expanded ? <CaretUp size={16} /> : <CaretDown size={16} />}
+              <span className="text-xs">{expanded ? '−' : '+'}</span>
             </Button>
           </div>
         </div>
@@ -81,8 +81,8 @@ export function ClauseItem({ clauseMatch, isExpanded = false, onToggle }: Clause
               <p className="text-xs font-medium text-muted-foreground uppercase">
                 Removed Clause
               </p>
-              <div className="p-4 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30">
-                <pre className="text-sm whitespace-pre-wrap font-mono text-red-800 dark:text-red-300">
+              <div className="p-4 rounded-lg bg-muted/50 border border-border">
+                <pre className="text-sm whitespace-pre-wrap font-mono text-muted-foreground line-through">
                   {sourceClauseContent}
                 </pre>
               </div>
@@ -92,8 +92,8 @@ export function ClauseItem({ clauseMatch, isExpanded = false, onToggle }: Clause
               <p className="text-xs font-medium text-muted-foreground uppercase">
                 Added Clause
               </p>
-              <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-900/30">
-                <pre className="text-sm whitespace-pre-wrap font-mono text-green-800 dark:text-green-300">
+              <div className="p-4 rounded-lg bg-foreground/5 border border-dashed border-foreground/20">
+                <pre className="text-sm whitespace-pre-wrap font-mono text-foreground">
                   {targetClauseContent}
                 </pre>
               </div>
@@ -109,7 +109,7 @@ export function ClauseItem({ clauseMatch, isExpanded = false, onToggle }: Clause
                     'p-4 rounded-lg border',
                     matchType === 'identical'
                       ? 'bg-muted/30 border-border'
-                      : 'bg-red-50/50 dark:bg-red-900/5 border-red-200/50 dark:border-red-900/20'
+                      : 'bg-muted/50 border-border'
                   )}
                 >
                   <pre className="text-sm whitespace-pre-wrap font-mono">
@@ -126,7 +126,7 @@ export function ClauseItem({ clauseMatch, isExpanded = false, onToggle }: Clause
                     'p-4 rounded-lg border',
                     matchType === 'identical'
                       ? 'bg-muted/30 border-border'
-                      : 'bg-green-50/50 dark:bg-green-900/5 border-green-200/50 dark:border-green-900/20'
+                      : 'bg-foreground/5 border-foreground/20'
                   )}
                 >
                   <pre className="text-sm whitespace-pre-wrap font-mono">

@@ -432,6 +432,135 @@ Return ONLY a JSON object with this structure:
 }
 
 // ============================================================================
+// OCR - Document Text Extraction
+// ============================================================================
+
+interface OCRJobResponse {
+  job_id: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+}
+
+interface OCRStatusResponse {
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  progress?: number;
+  result?: {
+    text: string;
+    pages?: number;
+  };
+  error?: string;
+}
+
+interface OCRResultResponse {
+  text: string;
+  tables?: Array<{
+    data: string[][];
+    page: number;
+  }>;
+  metadata?: {
+    pages: number;
+    file_type: string;
+  };
+}
+
+/**
+ * Submit a document for OCR processing
+ * Supports PDF, DOCX, and TXT files
+ */
+export async function submitOCRJob(file: File): Promise<string> {
+  if (!CASEDEV_API_KEY) {
+    throw new Error('CASEDEV_API_KEY environment variable is not set');
+  }
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  if (DEBUG) {
+    console.log(`[Case.dev] OCR submit: ${file.name} (${file.type})`);
+  }
+
+  const response = await fetch(`${CASEDEV_API_URL}/ocr/v1/process`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${CASEDEV_API_KEY}`,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`[Case.dev] OCR submit error (${response.status}):`, errorText);
+    throw new Error(`OCR submission failed: ${errorText}`);
+  }
+
+  const result: OCRJobResponse = await response.json();
+  return result.job_id;
+}
+
+/**
+ * Check OCR job status
+ */
+export async function checkOCRStatus(jobId: string): Promise<OCRStatusResponse> {
+  const response = await apiRequest<OCRStatusResponse>(`/ocr/v1/status/${jobId}`, {
+    method: 'GET',
+  });
+  return response;
+}
+
+/**
+ * Download OCR results
+ */
+export async function downloadOCRResults(jobId: string): Promise<OCRResultResponse> {
+  const response = await apiRequest<OCRResultResponse>(`/ocr/v1/results/${jobId}`, {
+    method: 'GET',
+  });
+  return response;
+}
+
+/**
+ * Process a document and wait for OCR completion
+ * Returns extracted text
+ */
+export async function extractTextFromFile(file: File): Promise<string> {
+  // For plain text files, just read directly
+  if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+    return await file.text();
+  }
+
+  // Submit OCR job
+  const jobId = await submitOCRJob(file);
+
+  if (DEBUG) {
+    console.log(`[Case.dev] OCR job submitted: ${jobId}`);
+  }
+
+  // Poll for completion (max 60 seconds)
+  const maxAttempts = 30;
+  const pollInterval = 2000; // 2 seconds
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    await new Promise((resolve) => setTimeout(resolve, pollInterval));
+
+    const status = await checkOCRStatus(jobId);
+
+    if (DEBUG) {
+      console.log(`[Case.dev] OCR status (${attempt + 1}/${maxAttempts}): ${status.status}`);
+    }
+
+    if (status.status === 'completed') {
+      // Get the full results
+      const results = await downloadOCRResults(jobId);
+      return results.text;
+    }
+
+    if (status.status === 'failed') {
+      throw new Error(`OCR processing failed: ${status.error || 'Unknown error'}`);
+    }
+  }
+
+  throw new Error('OCR processing timed out');
+}
+
+// ============================================================================
 // Semantic Tagging
 // ============================================================================
 

@@ -1,10 +1,10 @@
 'use client';
 
 // Dual file upload zone for contract comparison
+// Grayscale styling per UI guidelines - professional legal aesthetic
 
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, File, X } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { formatFileSize } from '@/lib/contracts/utils';
@@ -64,7 +64,7 @@ export function UploadZone({
         <textarea
           className={cn(
             'w-full min-h-[200px] p-4 rounded-xl border bg-input/30 text-sm',
-            'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
+            'focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/30',
             'resize-y font-mono',
             isProcessing && 'opacity-50 cursor-not-allowed'
           )}
@@ -86,8 +86,10 @@ export function UploadZone({
       {file ? (
         <div className="flex items-center justify-between p-4 rounded-xl border bg-card">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <File size={20} className="text-primary" weight="duotone" />
+            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+              <span className="text-sm font-mono text-muted-foreground">
+                {file.name.split('.').pop()?.toUpperCase()}
+              </span>
             </div>
             <div>
               <p className="text-sm font-medium">{file.name}</p>
@@ -102,7 +104,7 @@ export function UploadZone({
             onClick={onFileClear}
             disabled={isProcessing}
           >
-            <X size={16} />
+            <span className="text-sm">×</span>
           </Button>
         </div>
       ) : (
@@ -112,14 +114,14 @@ export function UploadZone({
             'flex flex-col items-center justify-center p-8 rounded-xl border-2 border-dashed',
             'cursor-pointer transition-all duration-200',
             isDragActive
-              ? 'border-primary bg-primary/5'
-              : 'border-border hover:border-primary/50 hover:bg-muted/30',
+              ? 'border-foreground/50 bg-muted/50'
+              : 'border-border hover:border-foreground/30 hover:bg-muted/30',
             isProcessing && 'opacity-50 cursor-not-allowed'
           )}
         >
           <input {...getInputProps()} />
           <div className="p-3 rounded-full bg-muted mb-3">
-            <Upload size={24} className="text-muted-foreground" weight="duotone" />
+            <span className="text-xl text-muted-foreground">↑</span>
           </div>
           <p className="text-sm text-muted-foreground text-center">
             {isDragActive ? 'Drop file here' : 'Drag & drop or click to upload'}
