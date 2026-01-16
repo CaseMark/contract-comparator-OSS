@@ -3,13 +3,75 @@
 // Individual clause item with diff display
 // Grayscale styling per UI guidelines - professional legal aesthetic
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import * as Diff from 'diff';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RiskBadge } from './risk-badge';
 import { MatchBadge } from './match-badge';
 import type { ClauseMatch } from '@/types/comparison';
+
+// Compute word-level diff between two texts
+function computeWordDiff(oldText: string, newText: string): Diff.Change[] {
+  return Diff.diffWords(oldText, newText);
+}
+
+// Render diff for the source (original) clause - shows deletions
+function SourceClauseDiff({ changes }: { changes: Diff.Change[] }) {
+  return (
+    <div className="text-sm whitespace-pre-wrap font-mono">
+      {changes.map((change, index) => {
+        // Skip additions in source view
+        if (change.added) {
+          return null;
+        }
+
+        if (change.removed) {
+          return (
+            <span
+              key={index}
+              className="bg-muted text-muted-foreground line-through"
+            >
+              {change.value}
+            </span>
+          );
+        }
+
+        // Unchanged text
+        return <span key={index}>{change.value}</span>;
+      })}
+    </div>
+  );
+}
+
+// Render diff for the target (modified) clause - shows additions
+function TargetClauseDiff({ changes }: { changes: Diff.Change[] }) {
+  return (
+    <div className="text-sm whitespace-pre-wrap font-mono">
+      {changes.map((change, index) => {
+        // Skip deletions in target view
+        if (change.removed) {
+          return null;
+        }
+
+        if (change.added) {
+          return (
+            <span
+              key={index}
+              className="bg-foreground/10 text-foreground font-medium underline decoration-foreground/30"
+            >
+              {change.value}
+            </span>
+          );
+        }
+
+        // Unchanged text
+        return <span key={index}>{change.value}</span>;
+      })}
+    </div>
+  );
+}
 
 interface ClauseItemProps {
   clauseMatch: ClauseMatch;
@@ -41,6 +103,14 @@ export function ClauseItem({ clauseMatch, isExpanded = false, onToggle }: Clause
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
   };
+
+  // Compute word-level diff for modified clauses
+  const diffChanges = useMemo(() => {
+    if (matchType === 'modified' && sourceClauseContent && targetClauseContent) {
+      return computeWordDiff(sourceClauseContent, targetClauseContent);
+    }
+    return null;
+  }, [matchType, sourceClauseContent, targetClauseContent]);
 
   return (
     <Card size="sm">
@@ -112,9 +182,13 @@ export function ClauseItem({ clauseMatch, isExpanded = false, onToggle }: Clause
                       : 'bg-muted/50 border-border'
                   )}
                 >
-                  <pre className="text-sm whitespace-pre-wrap font-mono">
-                    {sourceClauseContent}
-                  </pre>
+                  {diffChanges ? (
+                    <SourceClauseDiff changes={diffChanges} />
+                  ) : (
+                    <pre className="text-sm whitespace-pre-wrap font-mono">
+                      {sourceClauseContent}
+                    </pre>
+                  )}
                 </div>
               </div>
               <div className="space-y-2">
@@ -129,9 +203,13 @@ export function ClauseItem({ clauseMatch, isExpanded = false, onToggle }: Clause
                       : 'bg-foreground/5 border-foreground/20'
                   )}
                 >
-                  <pre className="text-sm whitespace-pre-wrap font-mono">
-                    {targetClauseContent || sourceClauseContent}
-                  </pre>
+                  {diffChanges ? (
+                    <TargetClauseDiff changes={diffChanges} />
+                  ) : (
+                    <pre className="text-sm whitespace-pre-wrap font-mono">
+                      {targetClauseContent || sourceClauseContent}
+                    </pre>
+                  )}
                 </div>
               </div>
             </div>

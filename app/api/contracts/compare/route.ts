@@ -24,8 +24,12 @@ import {
 
 // In-memory store for comparison status (in production, use Redis or similar)
 // This is needed because IndexedDB only works client-side
-const comparisonStatus = new Map<string, {
+// TTL: Auto-expire entries after 30 minutes to prevent stale state
+const COMPARISON_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
+interface ComparisonStatusEntry {
   status: 'pending' | 'processing' | 'completed' | 'failed';
+  createdAt: number;
   error?: string;
   result?: Comparison;
   clauseMatches?: ClauseMatch[];
@@ -37,7 +41,41 @@ const comparisonStatus = new Map<string, {
     sourceFileName?: string;
     targetFileName?: string;
   };
-}>();
+}
+
+const comparisonStatus = new Map<string, ComparisonStatusEntry>();
+
+// Cleanup stale entries periodically (every 5 minutes)
+function cleanupStaleEntries() {
+  const now = Date.now();
+  for (const [id, entry] of comparisonStatus.entries()) {
+    // Remove entries older than TTL, unless they're completed (keep completed for retrieval)
+    if (now - entry.createdAt > COMPARISON_TTL_MS && entry.status !== 'completed') {
+      console.log(`[Cleanup] Removing stale comparison ${id} (status: ${entry.status})`);
+      comparisonStatus.delete(id);
+    }
+    // Also clean up completed entries after 1 hour to prevent memory leak
+    if (now - entry.createdAt > 60 * 60 * 1000) {
+      console.log(`[Cleanup] Removing old completed comparison ${id}`);
+      comparisonStatus.delete(id);
+    }
+  }
+}
+
+// Run cleanup every 5 minutes
+setInterval(cleanupStaleEntries, 5 * 60 * 1000);
+
+// Helper to check if an entry is stale (for external use)
+export function isComparisonStale(id: string): boolean {
+  const entry = comparisonStatus.get(id);
+  if (!entry) return true;
+  const age = Date.now() - entry.createdAt;
+  // Consider processing entries stale after 10 minutes (comparison shouldn't take that long)
+  if (entry.status === 'processing' && age > 10 * 60 * 1000) {
+    return true;
+  }
+  return false;
+}
 
 export async function POST(request: NextRequest) {
   // Check demo usage limits before processing
@@ -120,9 +158,10 @@ export async function POST(request: NextRequest) {
     overallRiskScore: 0,
   };
 
-  // Store initial status with comparison metadata
+  // Store initial status with comparison metadata and timestamp
   comparisonStatus.set(comparisonId, {
     status: 'pending',
+    createdAt: Date.now(),
     metadata: {
       name: comparison.name,
       comparisonNumber: comparison.comparisonNumber,
@@ -140,8 +179,10 @@ export async function POST(request: NextRequest) {
     targetText
   ).catch((error) => {
     console.error('Background comparison failed:', error);
+    const existingStatus = comparisonStatus.get(comparisonId);
     comparisonStatus.set(comparisonId, {
       status: 'failed',
+      createdAt: existingStatus?.createdAt || Date.now(),
       error: error.message,
     });
   });
@@ -166,10 +207,11 @@ async function processComparisonInBackground(
   targetText: string
 ): Promise<void> {
   try {
-    // Update status to processing (preserve metadata)
+    // Update status to processing (preserve metadata and createdAt)
     const currentStatus = comparisonStatus.get(comparisonId);
     comparisonStatus.set(comparisonId, {
       status: 'processing',
+      createdAt: currentStatus?.createdAt || Date.now(),
       metadata: currentStatus?.metadata,
     });
 
@@ -383,8 +425,10 @@ async function processComparisonInBackground(
     };
 
     // Store completed result with clause matches and contracts
+    const completedStatus = comparisonStatus.get(comparisonId);
     comparisonStatus.set(comparisonId, {
       status: 'completed',
+      createdAt: completedStatus?.createdAt || Date.now(),
       result: finalComparison,
       clauseMatches: clauseMatches,
       sourceContract,
@@ -392,8 +436,10 @@ async function processComparisonInBackground(
     });
   } catch (error) {
     console.error('Comparison processing error:', error);
+    const errorStatus = comparisonStatus.get(comparisonId);
     comparisonStatus.set(comparisonId, {
       status: 'failed',
+      createdAt: errorStatus?.createdAt || Date.now(),
       error: error instanceof Error ? error.message : 'Unknown error',
     });
     throw error;
